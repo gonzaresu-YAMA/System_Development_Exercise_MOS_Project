@@ -53,15 +53,23 @@ function Orders() {
   // 完了確認ダイアログ用
   const [confirmTarget, setConfirmTarget] = useState(null)
 
-  // 業務向け：未確認→調理中→提供待ち→完了（※完了は今回は消えるので実質使わない）
+  // 並び順：未確認 → 調理中 → 提供待ち → 完了
   const sortedOrders = useMemo(() => {
     const rank = { '未確認': 0, '調理中': 1, '提供待ち': 2, '完了': 3 }
-    return [...orders].sort((a, b) => (rank[a.status] ?? 9) - (rank[b.status] ?? 9))
+    return [...orders].sort(
+      (a, b) => (rank[a.status] ?? 9) - (rank[b.status] ?? 9)
+    )
   }, [orders])
+
+  // ✅ 未確認件数
+  const urgentCount = useMemo(
+    () => orders.filter(o => o.status === '未確認').length,
+    [orders]
+  )
 
   const totalPages = Math.max(1, Math.ceil(sortedOrders.length / PER_PAGE))
 
-  // ページが範囲外になったら自動調整（完了で消えた時に2ページ目が空になるのを防ぐ）
+  // 完了で件数が減ってページがはみ出た時の調整
   useEffect(() => {
     if (page > totalPages) setPage(totalPages)
   }, [page, totalPages])
@@ -71,16 +79,15 @@ function Orders() {
     return sortedOrders.slice(start, start + PER_PAGE)
   }, [sortedOrders, page])
 
-  // 「完了」クリック → 確認ダイアログ表示
+  // 完了 → 確認表示
   const requestComplete = (order) => {
     setConfirmTarget(order)
   }
 
-  // 確認OK → 注文を削除（=消える → 次が詰まって上に来る）
+  // 確認OK → 削除（＝次が繰り上がる）
   const confirmComplete = () => {
     if (!confirmTarget) return
-    const id = confirmTarget.id
-    setOrders((prev) => prev.filter((o) => o.id !== id))
+    setOrders(prev => prev.filter(o => o.id !== confirmTarget.id))
     setConfirmTarget(null)
   }
 
@@ -88,30 +95,36 @@ function Orders() {
 
   return (
     <section className="orders">
+      {/* ヘッダー */}
       <header className="ordersHeader">
         <h2 className="ordersTitle">注文管理</h2>
-        <div className="ordersMeta">
-          全 {sortedOrders.length} 件 / {page} / {totalPages}
-        </div>
+
+        {urgentCount > 0 && (
+          <div className="urgentCount">
+            未確認 <strong>{urgentCount}</strong> 件
+          </div>
+        )}
       </header>
 
+      {/* 一覧 */}
       <div className="ordersList">
-        {pageOrders.map((o) => (
+        {pageOrders.map(o => (
           <article
             key={o.id}
-            className={`orderCard status-${o.status} ${o.status === '未確認' ? 'isUrgent' : ''}`}
+            className={`orderCard status-${o.status}`}
           >
-            {/* 上段：卓・時間・状態 */}
+            {/* 上段 */}
             <div className="orderTop">
               <div className="orderMain">
                 <div className="orderTable">{o.table}</div>
                 <div className="orderTime">{o.time}</div>
               </div>
-
-              <span className={`statusBadge status-${o.status}`}>{o.status}</span>
+              <span className={`statusBadge status-${o.status}`}>
+                {o.status}
+              </span>
             </div>
 
-            {/* 中段：商品一覧（最初から表示） */}
+            {/* 商品一覧 */}
             <ul className="itemList">
               {o.items.map((it, idx) => (
                 <li key={idx} className="itemRow">
@@ -121,12 +134,11 @@ function Orders() {
               ))}
             </ul>
 
-            {/* 下段：操作 */}
+            {/* 操作 */}
             <div className="orderActions">
               <button className="ghostBtn2" type="button">
                 確認
               </button>
-
               <button
                 className="primaryBtn2"
                 type="button"
@@ -145,24 +157,22 @@ function Orders() {
         )}
       </div>
 
-      {/* ページャー（8件単位） */}
-      <nav className="pager" aria-label="ページ切り替え">
+      {/* ページャー */}
+      <nav className="pager">
         <button
           className="pagerBtn"
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          onClick={() => setPage(p => Math.max(1, p - 1))}
           disabled={page === 1}
-          type="button"
         >
           ←
         </button>
 
         <div className="pagerNums">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
             <button
               key={n}
               className={`pagerNum ${n === page ? 'active' : ''}`}
               onClick={() => setPage(n)}
-              type="button"
             >
               {n}
             </button>
@@ -171,19 +181,18 @@ function Orders() {
 
         <button
           className="pagerBtn"
-          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          onClick={() => setPage(p => Math.min(totalPages, p + 1))}
           disabled={page === totalPages}
-          type="button"
         >
           →
         </button>
       </nav>
 
-      {/* ✅ 完了確認ダイアログ（誤タップ防止） */}
+      {/* 完了確認ダイアログ */}
       {confirmTarget && (
         <>
           <div className="confirmOverlay" onClick={cancelComplete} />
-          <div className="confirmModal" role="dialog" aria-modal="true">
+          <div className="confirmModal">
             <h3 className="confirmTitle">完了にしますか？</h3>
             <p className="confirmText">
               <strong>{confirmTarget.table}</strong>（{confirmTarget.time}）の注文を完了にします。
@@ -192,10 +201,10 @@ function Orders() {
             </p>
 
             <div className="confirmActions">
-              <button className="ghostBtn2" onClick={cancelComplete} type="button">
+              <button className="ghostBtn2" onClick={cancelComplete}>
                 キャンセル
               </button>
-              <button className="dangerBtn" onClick={confirmComplete} type="button">
+              <button className="dangerBtn" onClick={confirmComplete}>
                 OK（完了）
               </button>
             </div>
