@@ -58,6 +58,7 @@
 
 /* ボタン共通 */
 .customer-button {
+  display: block;
   width: 100%;
   max-width: 280px;
   margin: 0 auto;
@@ -75,6 +76,14 @@
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
 }
 
+.customer-button.is-disabled {
+  background-color: rgba(255, 152, 0, 0.35);
+  color: rgba(255, 255, 255, 0.78);
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* 個別ボタン */
 .menu-button {
   background-color: #4caf50;
@@ -89,7 +98,7 @@
 }
 
 /* 戻るボタン */
-.back-button {
+.checkout-button {
   margin-top:20px;
   background-color: #555;
 }

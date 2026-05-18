@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import "./customer.css";
 
+const hasOrderHistory = false;
+
 export default function CustomerPage() {
   return (
     <div className="customer-container">
@@ -13,20 +15,22 @@ export default function CustomerPage() {
 
         <div className="customer-button-area">
           <Link to="/menu" className="customer-button menu-button">
-            メニューを見る
+            メニュー表
           </Link>
 
-          <Link to="/order" className="customer-button order-button">
-            注文する
-          </Link>
-
-          <Link to="/history" className="customer-button confirm-button">
-            注文履歴
-          </Link>
+          {hasOrderHistory ? (
+            <Link to="/history" className="customer-button confirm-button">
+              注文履歴
+            </Link>
+          ) : (
+            <span className="customer-button confirm-button is-disabled" aria-disabled="true">
+              注文履歴
+            </span>
+          )}
         </div>
 
-        <Link to="/" className="customer-button back-button">
-          トップへ戻る
+        <Link to="/checkout" className="customer-button checkout-button">
+          お会計
         </Link>
       </div>
     </div>

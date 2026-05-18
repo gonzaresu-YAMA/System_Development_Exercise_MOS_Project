@@ -1,6 +1,13 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom'
 import './App.css'
-import About from './Customer';
+import CustomerPage from './Customer'
+import MenuPage, {
+  HistoryPage,
+  OrderConfirmPage,
+  OrderSendPage,
+  CallStaffPage
+} from './menu'
+
 function Home() {
   return (
     <>
@@ -14,7 +21,7 @@ function Home() {
       </div>
 
       <div className="button-row">
-        <Link to="/about" className="nav-button customer-button">
+        <Link to="/customer" className="nav-button customer-button">
           お客様用画面へ移行
         </Link>
       </div>
@@ -23,19 +30,6 @@ function Home() {
         スタッフ用画面
       </Link>
     </>
-  )
-}
-
-function CustomerPage() {
-  return (
-    <div className="page-content">
-      <h2>お客様用画面</h2>
-      <p>こちらからメニューやご注文の確認・操作ができます。</p>
-
-      <Link to="/" className="nav-button back-button">
-        トップへ戻る
-      </Link>
-    </div>
   )
 }
 
@@ -52,6 +46,21 @@ function StaffPage() {
   )
 }
 
+function CheckoutPage() {
+  return (
+    <div className="page-content">
+      <h2>お会計</h2>
+      <p>お会計画面です。確認後はカスタマー画面へ戻ります。</p>
+
+      <div className="button-row">
+        <Link to="/customer" className="nav-button back-button">
+          カスタマー画面へ戻る
+        </Link>
+      </div>
+    </div>
+  )
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -59,8 +68,14 @@ function App() {
         <main className="home-section">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About/>} />
-            <Route path="/Customer" element={<CustomerPage />} />
+            <Route path="/about" element={<Navigate to="/customer" replace />} />
+            <Route path="/customer" element={<CustomerPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/menu" element={<MenuPage />} />
+            <Route path="/history" element={<HistoryPage />} />
+            <Route path="/order-confirm" element={<OrderConfirmPage />} />
+            <Route path="/order-send" element={<OrderSendPage />} />
+            <Route path="/call-staff" element={<CallStaffPage />} />
             <Route path="/staff" element={<StaffPage />} />
           </Routes>
         </main>
