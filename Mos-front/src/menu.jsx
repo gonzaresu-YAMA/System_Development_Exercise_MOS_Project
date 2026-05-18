@@ -1,4 +1,6 @@
+import { useContext } from 'react'
 import { Link } from "react-router-dom";
+import { CartContext } from "./CartContext";
 import "./menu.css";
 
 const hasOrderHistory = false;
@@ -15,6 +17,8 @@ const menuItems = [
 ];
 
 function MenuLayout({ activeTab, children }) {
+  const { cartCount } = useContext(CartContext)
+
   return (
     <div className="menu-screen">
       <header className="menu-header">
@@ -63,7 +67,7 @@ function MenuLayout({ activeTab, children }) {
               注文
               <br />
               保留
-              <span className="badge">0</span>
+              <span className="badge">{cartCount}</span>
             </Link>
           </div>
         </div>
@@ -78,7 +82,7 @@ function MenuLayout({ activeTab, children }) {
 
         <Link to="/order-send" className="footer-button badge-parent">
           注文送信
-          <span className="badge">0</span>
+          <span className="badge">{cartCount}</span>
         </Link>
 
         <Link to="/call-staff" className="footer-button">
@@ -90,6 +94,16 @@ function MenuLayout({ activeTab, children }) {
 }
 
 export default function MenuPage() {
+  const { addToCart } = useContext(CartContext)
+
+  const handleAddToCart = (item) => {
+    addToCart({
+      id: item.id,
+      name: item.name,
+      price: item.price
+    })
+  }
+
   return (
     <MenuLayout activeTab="free">
       <div className="menu-grid">
@@ -115,6 +129,7 @@ export default function MenuPage() {
                 type="button"
                 className="cart-button"
                 disabled={item.soldOut}
+                onClick={() => handleAddToCart(item)}
               >
                 カートに入れる
               </button>
@@ -123,7 +138,7 @@ export default function MenuPage() {
         ))}
       </div>
     </MenuLayout>
-  );
+  )
 }
 
 export function HistoryPage() {
@@ -160,16 +175,58 @@ export function HistoryPage() {
 }
 
 export function OrderConfirmPage() {
+  const { cartItems, removeFromCart } = useContext(CartContext)
+
   return (
     <MenuLayout activeTab="hold">
-      <div className="modal-overlay">
-        <div className="modal-card">
-          <p>注文保留がありません。</p>
-          <Link to="/menu" className="modal-button is-dark">戻る</Link>
+      <div className="order-confirm-screen">
+        <div className="order-confirm-card">
+          <h3>注文保留一覧</h3>
+          
+          {cartItems.length === 0 ? (
+            <div className="order-empty-state">
+              <p>注文予定の商品がありません。</p>
+              <p className="order-empty-hint">メニューからカートに入れることで注文できます。</p>
+            </div>
+          ) : (
+            <>
+              <table className="order-table">
+                <thead>
+                  <tr>
+                    <th>商品名</th>
+                    <th>価格</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cartItems.map((item) => (
+                    <tr key={item.cartId}>
+                      <td>{item.name}</td>
+                      <td>{item.price}￥</td>
+                      <td>
+                        <button
+                          type="button"
+                          className="remove-button"
+                          onClick={() => removeFromCart(item.cartId)}
+                        >
+                          削除
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="order-total">
+                <p>合計: {cartItems.reduce((sum, item) => sum + item.price, 0)}￥</p>
+              </div>
+            </>
+          )}
+          
+          <Link to="/menu" className="order-button back-button">戻る</Link>
         </div>
       </div>
     </MenuLayout>
-  );
+  )
 }
 
 export function OrderSendPage() {
@@ -195,9 +252,28 @@ export function CallStaffPage() {
         <div className="modal-card">
           <p>店員を呼び出しますか？</p>
           <div className="modal-actions">
-            <button type="button" className="modal-button">呼び出す</button>
+            <Link to="/call-staff-calling" className="modal-button">呼び出す</Link>
             <Link to="/menu" className="modal-button is-dark">キャンセル</Link>
           </div>
+        </div>
+      </div>
+    </MenuLayout>
+  );
+}
+
+export function CallingStaffPage() {
+  return (
+    <MenuLayout activeTab="free">
+      <div className="calling-screen">
+        <div className="calling-card">
+          <div className="calling-animation">
+            <div className="calling-dot"></div>
+            <div className="calling-dot"></div>
+            <div className="calling-dot"></div>
+          </div>
+          <h2>只今呼び出し中...</h2>
+          <p>店員が参ります。お待ちください。</p>
+          <Link to="/menu" className="calling-button">戻る</Link>
         </div>
       </div>
     </MenuLayout>

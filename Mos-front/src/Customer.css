@@ -67,6 +67,7 @@
   color: white;
   text-align: center;
   font-size: 16px;
+  text-decoration: none;
 
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
@@ -74,14 +75,6 @@
 .customer-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
-}
-
-.customer-button.is-disabled {
-  background-color: rgba(255, 152, 0, 0.35);
-  color: rgba(255, 255, 255, 0.78);
-  opacity: 0.55;
-  cursor: not-allowed;
-  pointer-events: none;
 }
 
 /* 個別ボタン */
@@ -97,10 +90,41 @@
   background-color: #ff9800;
 }
 
-/* 戻るボタン */
+/* お会計ボタン */
 .checkout-button {
-  margin-top:20px;
+  margin-top: 10px;
   background-color: #555;
+}
+
+/* 無効状態の注文履歴ボタン */
+.customer-button.confirm-button.is-disabled {
+  background-color: rgba(255, 152, 0, 0.55);
+  color: rgba(255, 255, 255, 0.9);
+  opacity: 0.72;
+  cursor: not-allowed;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+/* 無効状態ではhover効果を無効化 */
+.customer-button.confirm-button.is-disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* aria-disabledでも無効状態を保証 */
+.customer-button[aria-disabled="true"] {
+  background-color: rgba(255, 152, 0, 0.55);
+  color: rgba(255, 255, 255, 0.9);
+  opacity: 0.72;
+  cursor: not-allowed;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+.customer-button[aria-disabled="true"]:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 /* スマホ対応 */

@@ -389,6 +389,207 @@
 }
 
 /* =========================
+   注文保留画面
+========================= */
+
+.order-confirm-screen {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.order-confirm-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.order-confirm-card h3 {
+  margin: 0 0 16px;
+  font-size: 18px;
+  color: #111;
+  text-align: center;
+}
+
+.order-empty-state {
+  text-align: center;
+  padding: 30px 20px;
+  color: #666;
+}
+
+.order-empty-state p {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.order-empty-hint {
+  font-size: 13px;
+  color: #999;
+}
+
+.order-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+
+.order-table th {
+  background-color: #f5f5f5;
+  border-bottom: 2px solid #ddd;
+  padding: 10px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.order-table td {
+  border-bottom: 1px solid #eee;
+  padding: 10px;
+}
+
+.remove-button {
+  background-color: #d7261e;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+}
+
+.remove-button:hover {
+  background-color: #a81a14;
+}
+
+.order-total {
+  text-align: right;
+  padding: 12px 0;
+  border-top: 1px solid #ddd;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111;
+}
+
+.order-button {
+  display: block;
+  margin-top: 14px;
+  padding: 10px 20px;
+  background-color: #555;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  text-align: center;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.18s ease;
+}
+
+.order-button:hover {
+  background-color: #444;
+}
+
+.order-button.back-button {
+  background-color: #999;
+}
+
+.order-button.back-button:hover {
+  background-color: #777;
+}
+
+/* =========================
+   呼び出し中画面
+========================= */
+
+.calling-screen {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.calling-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.calling-animation {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  height: 30px;
+}
+
+.calling-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #4caf50;
+  animation: calling-pulse 1.4s ease-in-out infinite;
+}
+
+.calling-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.calling-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes calling-pulse {
+  0%, 80%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+.calling-card h2 {
+  margin: 0 0 12px;
+  font-size: 24px;
+  color: #111;
+}
+
+.calling-card p {
+  margin: 0 0 24px;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+}
+
+.calling-button {
+  display: inline-block;
+  padding: 12px 28px;
+  background-color: #999;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.18s ease;
+}
+
+.calling-button:hover {
+  background-color: #777;
+}
+
+/* =========================
    スマホ対応
 ========================= */
 

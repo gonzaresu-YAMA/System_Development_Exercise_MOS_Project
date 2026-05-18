@@ -23,7 +23,10 @@ export default function CustomerPage() {
               注文履歴
             </Link>
           ) : (
-            <span className="customer-button confirm-button is-disabled" aria-disabled="true">
+            <span
+              className="customer-button confirm-button is-disabled"
+              aria-disabled="true"
+            >
               注文履歴
             </span>
           )}
