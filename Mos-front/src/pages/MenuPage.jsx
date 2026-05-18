@@ -1,28 +1,16 @@
 import { useContext } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { MenuLayout } from '../components/MenuLayout'
 import { CartContext } from '../CartContext'
+import menuItems from '../data/menuItems'
 import '../menu.css'
-
-const menuItems = [
-  { id: 1, name: 'おしぼり', price: 100, image: '/oshibori.png', soldOut: false },
-  { id: 2, name: '小皿', price: 0, image: '/kozara.png', soldOut: true },
-  { id: 3, name: 'グラス', price: 0, image: '/glass.png', soldOut: true },
-  { id: 4, name: '割り箸', price: 0, image: '', soldOut: true },
-  { id: 5, name: 'お冷', price: 0, image: '', soldOut: true },
-  { id: 6, name: '□□', price: 0, image: '', soldOut: false },
-  { id: 7, name: '□□', price: 0, image: '', soldOut: false },
-  { id: 8, name: '□□', price: 0, image: '', soldOut: false },
-]
 
 export default function MenuPage() {
   const { addToCart } = useContext(CartContext)
+  const navigate = useNavigate()
 
-  const handleAddToCart = (item) => {
-    addToCart({
-      id: item.id,
-      name: item.name,
-      price: item.price
-    })
+  const handleShowDetail = (item) => {
+    navigate(`/menu/item/${item.id}`)
   }
 
   return (
@@ -50,7 +38,7 @@ export default function MenuPage() {
                 type="button"
                 className="cart-button"
                 disabled={item.soldOut}
-                onClick={() => handleAddToCart(item)}
+                onClick={() => handleShowDetail(item)}
               >
                 カートに入れる
               </button>

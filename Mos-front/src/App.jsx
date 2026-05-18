@@ -11,6 +11,7 @@ import CallStaffPage from './pages/CallStaffPage'
 import CallingStaffPage from './pages/CallingStaffPage'
 import StaffPage from './pages/StaffPage'
 import CheckoutPage from './pages/CheckoutPage'
+import ProductDetail from './pages/ProductDetail'
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
               <Route path="/customer" element={<CustomerPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/menu" element={<MenuPage />} />
+              <Route path="/menu/item/:id" element={<ProductDetail />} />
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/order-confirm" element={<OrderConfirmPage />} />
               <Route path="/order-send" element={<OrderSendPage />} />

@@ -1,12 +1,7 @@
 .menu-screen {
   width: 100%;
   min-height: 100vh;
-  background-image:
-    linear-gradient(rgba(40, 24, 8, 0.25), rgba(40, 24, 8, 0.25)),
-    url("../public/home-bg.jpg");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: transparent; /* 背景はトップレベル (App.css の .app-main) で一元管理します */
 
   display: flex;
   flex-direction: column;
@@ -588,6 +583,110 @@
 .calling-button:hover {
   background-color: #777;
 }
+
+/* =========================
+   商品詳細（ProductDetail）
+========================= */
+
+.page-card.product-detail {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+.product-image-area {
+  height: 320px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-image {
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.product-info {
+  padding: 20px;
+}
+
+.product-info h2 {
+  margin: 0 0 8px;
+  font-size: 1.6rem;
+  color: #111;
+}
+
+.price {
+  font-size: 1.25rem;
+  color: #111;
+  margin-bottom: 12px;
+}
+
+.qty-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.qty-btn {
+  width: 40px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: #efe8f3;
+  color: #111;
+  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.qty-display {
+  min-width: 44px;
+  height: 36px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.add-to-cart.big {
+  display: inline-block;
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 28px;
+  background: #d7261e;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  border: none;
+  box-shadow: 0 10px 28px rgba(215,38,30,0.22);
+  cursor: pointer;
+  text-align: center;
+}
+
+.add-to-cart.big:active { transform: translateY(0); }
+
+.product-info .back-button {
+  margin-top: 12px;
+  display: inline-block;
+  background: transparent;
+  border: none;
+  color: #111;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 
 /* =========================
    スマホ対応
