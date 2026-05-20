@@ -3,10 +3,9 @@ import { Link } from 'react-router-dom'
 import { CartContext } from '../CartContext'
 import '../menu.css'
 
-const hasOrderHistory = false
-
 export function MenuLayout({ activeTab, children }) {
-  const { cartCount } = useContext(CartContext)
+  const { cartCount, orderHistory } = useContext(CartContext)
+  const hasOrderHistory = orderHistory.length > 0
 
   return (
     <div className="menu-screen">

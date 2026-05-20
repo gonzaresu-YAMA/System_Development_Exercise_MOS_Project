@@ -1,7 +1,6 @@
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import menuItems from '../data/menuItems'
-import { useContext } from 'react'
 import { CartContext } from '../CartContext'
 import '../menu.css'
 
@@ -25,19 +24,31 @@ export default function ProductDetail() {
   }
 
   return (
-    <div className="page-content">
-      <div className="page-card product-detail">
-        <div className="product-image-area">
+    <div className="product-detail-screen">
+      <header className="product-detail-header">
+        <button
+          type="button"
+          className="product-detail-back"
+          onClick={() => navigate(-1)}
+        >
+          &lt;&lt; 戻る
+        </button>
+      </header>
+
+      <main className="product-detail-body">
+        <div className="product-detail-image">
           {item.image ? (
             <img src={item.image} alt={item.name} className="product-image" />
           ) : (
-            <div style={{height:240, background:'#fff'}} />
+            <div className="product-image-placeholder" />
           )}
         </div>
 
-        <div className="product-info">
-          <h2>{item.name}</h2>
-          <p className="price">¥{item.price}</p>
+        <div className="product-detail-info">
+          <div className="product-detail-row">
+            <h2 className="product-detail-name">{item.name}</h2>
+            <p className="product-detail-price">¥{item.price}</p>
+          </div>
 
           <div className="qty-controls">
             <button onClick={dec} className="qty-btn">-</button>
@@ -48,10 +59,8 @@ export default function ProductDetail() {
           <button className="add-to-cart big" onClick={handleAdd}>
             カートに入れる
           </button>
-
-          <button className="back-button" onClick={() => navigate(-1)}>戻る</button>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

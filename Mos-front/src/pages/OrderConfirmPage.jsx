@@ -5,54 +5,93 @@ import { CartContext } from '../CartContext'
 import '../menu.css'
 
 export default function OrderConfirmPage() {
-  const { cartItems, removeFromCart } = useContext(CartContext)
+  const { cartItems, addToCart, removeFromCart } = useContext(CartContext)
+
+  const grouped = cartItems.reduce((acc, item) => {
+    if (!acc[item.name]) {
+      acc[item.name] = { name: item.name, price: item.price, items: [] }
+    }
+    acc[item.name].items.push(item)
+    return acc
+  }, {})
+
+  const rows = Object.values(grouped)
+
+  const handleRemoveOne = (group) => {
+    const target = group.items[0]
+    if (target) {
+      removeFromCart(target.cartId)
+    }
+  }
+
+  const handleAddOne = (group) => {
+    addToCart({ id: Date.now(), name: group.name, price: group.price })
+  }
 
   return (
     <MenuLayout activeTab="hold">
       <div className="order-confirm-screen">
         <div className="order-confirm-card">
-          <h3>注文保留一覧</h3>
-          
-          {cartItems.length === 0 ? (
-            <div className="order-empty-state">
-              <p>注文予定の商品がありません。</p>
-              <p className="order-empty-hint">メニューからカートに入れることで注文できます。</p>
-            </div>
-          ) : (
-            <>
-              <table className="order-table">
-                <thead>
-                  <tr>
-                    <th>商品名</th>
-                    <th>価格</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cartItems.map((item) => (
-                    <tr key={item.cartId}>
-                      <td>{item.name}</td>
-                      <td>{item.price}￥</td>
-                      <td>
+          <table className="order-table">
+            <thead>
+              <tr>
+                <th className="order-col-name">名称</th>
+                <th className="order-col-action">&nbsp;</th>
+                <th className="order-col-qty">数量</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.length === 0 ? (
+                <tr>
+                  <td className="order-col-name">&nbsp;</td>
+                  <td className="order-col-action">&nbsp;</td>
+                  <td className="order-col-qty">&nbsp;</td>
+                </tr>
+              ) : (
+                rows.map((group) => (
+                  <tr key={group.name}>
+                    <td className="order-col-name">{group.name}</td>
+                    <td className="order-col-action">
+                      <div className="order-action-cell">
                         <button
                           type="button"
-                          className="remove-button"
-                          onClick={() => removeFromCart(item.cartId)}
+                          className="order-remove-pill"
+                          onClick={() => handleRemoveOne(group)}
                         >
                           削除
                         </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div className="order-total">
-                <p>合計: {cartItems.reduce((sum, item) => sum + item.price, 0)}￥</p>
-              </div>
-            </>
-          )}
-          
-          <Link to="/menu" className="order-button back-button">戻る</Link>
+                        <div className="order-stepper">
+                          <button
+                            type="button"
+                            className="order-step-btn"
+                            onClick={() => handleRemoveOne(group)}
+                            aria-label="数量を減らす"
+                          >
+                            ∨
+                          </button>
+                          <button
+                            type="button"
+                            className="order-step-btn"
+                            onClick={() => handleAddOne(group)}
+                            aria-label="数量を増やす"
+                          >
+                            ∧
+                          </button>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="order-col-qty">{group.items.length}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+
+          <div className="order-confirm-actions">
+            <Link to="/order-send" className="order-confirm-send">
+              注文を確定して送信
+            </Link>
+          </div>
         </div>
       </div>
     </MenuLayout>

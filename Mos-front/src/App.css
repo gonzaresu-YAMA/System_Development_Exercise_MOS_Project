@@ -8,7 +8,7 @@
 
   background-image:
     linear-gradient(rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.25)),
-    url('../public/home-bg.jpg');
+    url('/home-bg.jpg');
 
   background-size: cover;
   background-position: center;
