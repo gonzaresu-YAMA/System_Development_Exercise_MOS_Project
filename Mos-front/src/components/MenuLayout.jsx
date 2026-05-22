@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { CartContext } from '../CartContext'
 import '../menu.css'
 
-export function MenuLayout({ activeTab, children }) {
+export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick }) {
   const { cartCount } = useContext(CartContext)
 
   return (
@@ -52,9 +52,19 @@ export function MenuLayout({ activeTab, children }) {
       <main className="menu-content">{children}</main>
 
       <footer className="menu-footer">
-        <Link to="/menu/categories" className="footer-button">
-          ホームへ
-        </Link>
+        {showCheckout ? (
+          <button
+            type="button"
+            className="footer-button checkout-button"
+            onClick={onCheckoutClick}
+          >
+            お会計
+          </button>
+        ) : (
+          <Link to="/menu/categories" className="footer-button">
+            ホームへ
+          </Link>
+        )}
 
         <Link to="/order-send" className="footer-button badge-parent">
           注文送信

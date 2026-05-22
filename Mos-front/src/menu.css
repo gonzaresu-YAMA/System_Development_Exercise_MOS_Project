@@ -533,6 +533,11 @@
   cursor: pointer;
 }
 
+.footer-button.checkout-button {
+  background: #e10600;
+  color: #fff;
+}
+
 .footer-button:hover {
   transform: translateY(-1px);
 }

@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { MenuLayout } from '../components/MenuLayout'
 import '../menu.css'
 
@@ -12,8 +13,20 @@ const categories = [
 ]
 
 export default function CategoryMenu() {
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const navigate = useNavigate()
+
+  const handleCheckout = () => {
+    setIsConfirmOpen(true)
+  }
+
+  const handleConfirm = () => {
+    setIsConfirmOpen(false)
+    navigate('/checkout')
+  }
+
   return (
-    <MenuLayout activeTab="free">
+    <MenuLayout activeTab="free" showCheckout onCheckoutClick={handleCheckout}>
       <div className="category-grid">
         {categories.map((category) => (
           <Link
@@ -32,6 +45,30 @@ export default function CategoryMenu() {
           </Link>
         ))}
       </div>
+
+      {isConfirmOpen && (
+        <div className="modal-overlay">
+          <div className="modal-card">
+            <p>
+              お支払いを確定しますか?
+              <br />
+              確定後は追加注文することができません
+            </p>
+            <div className="modal-actions">
+              <button type="button" className="modal-button" onClick={handleConfirm}>
+                はい
+              </button>
+              <button
+                type="button"
+                className="modal-button is-dark"
+                onClick={() => setIsConfirmOpen(false)}
+              >
+                いいえ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </MenuLayout>
   )
 }
