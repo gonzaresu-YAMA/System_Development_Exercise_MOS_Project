@@ -1,7 +1,5 @@
-import { useContext } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { MenuLayout } from '../components/MenuLayout'
-import { CartContext } from '../CartContext'
 import menuItems from '../data/menuItems'
 import '../menu.css'
 
@@ -15,7 +13,6 @@ const categoryLabels = {
 }
 
 export default function MenuPage() {
-  const { addToCart } = useContext(CartContext)
   const navigate = useNavigate()
   const { category } = useParams()
 

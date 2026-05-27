@@ -1,5 +1,16 @@
 import { createContext, useEffect, useState } from 'react'
 
+let cartIdCounter = 0
+
+const generateCartId = () => {
+  if (typeof globalThis.crypto?.randomUUID === 'function') {
+    return globalThis.crypto.randomUUID()
+  }
+
+  cartIdCounter += 1
+  return `cart-${cartIdCounter}`
+}
+
 export const CartContext = createContext()
 
 export function CartProvider({ children }) {
@@ -27,7 +38,7 @@ export function CartProvider({ children }) {
   }, [orderHistory])
 
   const addToCart = (item) => {
-    setCartItems(prev => [...prev, { ...item, cartId: Date.now() }])
+    setCartItems(prev => [...prev, { ...item, cartId: generateCartId() }])
   }
 
   const removeFromCart = (cartId) => {

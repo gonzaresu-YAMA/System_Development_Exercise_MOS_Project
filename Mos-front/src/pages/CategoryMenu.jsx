@@ -4,11 +4,11 @@ import { MenuLayout } from '../components/MenuLayout'
 import '../menu.css'
 
 const categories = [
-  { id: 'free', label: '無料備品', image: '/oshibori.png' },
-  { id: 'yakitori', label: '焼き鳥', image: '/yakitori.jpg' },
+  { id: 'free', label: '無料備品', image: '' },
+  { id: 'yakitori', label: '焼き鳥', image: '' },
   { id: 'rice', label: 'ごはんもの', image: '' },
   { id: 'speed', label: 'スピード', image: '' },
-  { id: 'drink', label: 'ドリンク', image: '/beer.jpg' },
+  { id: 'drink', label: 'ドリンク', image: '' },
   { id: 'dessert', label: 'デザート', image: '' }
 ]
 

@@ -1,5 +1,5 @@
 const menuItems = [
-  { id: 1, name: 'おしぼり', price: 0, image: '/oshibori.png', soldOut: false, category: 'free' },
+  { id: 1, name: 'おしぼり', price: 0, image: '', soldOut: false, category: 'free' },
   { id: 2, name: '小皿', price: 0, image: '/kozara.png', soldOut: true, category: 'free' },
   { id: 3, name: 'グラス', price: 0, image: '/glass.png', soldOut: true, category: 'free' },
   { id: 4, name: '割り箸', price: 0, image: '', soldOut: true, category: 'free' },
