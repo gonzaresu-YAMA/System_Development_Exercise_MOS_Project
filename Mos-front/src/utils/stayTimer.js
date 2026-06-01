@@ -1,4 +1,4 @@
-const initialRemainingSeconds = 30 * 60
+const initialRemainingSeconds = 1 * 60
 const countdownStorageKey = 'mosRemainingUntil'
 
 export const getStayUntil = () => {
