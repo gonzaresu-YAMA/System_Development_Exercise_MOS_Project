@@ -2,10 +2,12 @@ import { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import { MenuLayout } from '../components/MenuLayout'
 import { CartContext } from '../CartContext'
+import useStayRemaining from '../hooks/useStayRemaining'
 import '../menu.css'
 
 export default function OrderConfirmPage() {
   const { cartItems, addToCart, removeFromCart } = useContext(CartContext)
+  const { isExpired } = useStayRemaining()
 
   const grouped = cartItems.reduce((acc, item) => {
     if (!acc[item.name]) {
@@ -57,6 +59,7 @@ export default function OrderConfirmPage() {
                           type="button"
                           className="order-remove-pill"
                           onClick={() => handleRemoveOne(group)}
+                          disabled={isExpired}
                         >
                           削除
                         </button>
@@ -66,6 +69,7 @@ export default function OrderConfirmPage() {
                             className="order-step-btn"
                             onClick={() => handleAddOne(group)}
                             aria-label="数量を増やす"
+                            disabled={isExpired}
                           >
                             ∧
                           </button>
@@ -74,6 +78,7 @@ export default function OrderConfirmPage() {
                             className="order-step-btn"
                             onClick={() => handleRemoveOne(group)}
                             aria-label="数量を減らす"
+                            disabled={isExpired}
                           >
                             ∨
                           </button>
@@ -88,9 +93,15 @@ export default function OrderConfirmPage() {
           </table>
 
           <div className="order-confirm-actions">
-            <Link to="/order-send" className="order-confirm-send">
-              注文を確定して送信
-            </Link>
+            {isExpired ? (
+              <button type="button" className="order-confirm-send is-disabled" disabled>
+                注文を確定して送信
+              </button>
+            ) : (
+              <Link to="/order-send" className="order-confirm-send">
+                注文を確定して送信
+              </Link>
+            )}
           </div>
         </div>
       </div>

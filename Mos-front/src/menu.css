@@ -286,15 +286,18 @@
 }
 
 .menu-image-area {
-  height: 56px;
+  height: 110px;
   background: #fff;
   position: relative;
+  overflow: hidden;
+  padding: 0;
 }
 
 .menu-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .menu-image-placeholder {
@@ -724,6 +727,12 @@
   opacity: 0.9;
 }
 
+.footer-button.is-disabled,
+.footer-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* =========================
    注文保留画面
 ========================= */
@@ -819,6 +828,12 @@
   font-size: 12px;
   text-decoration: none;
   border: 1px solid #999;
+}
+
+.order-confirm-send.is-disabled,
+.order-confirm-send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @media (max-width: 640px) {
@@ -949,4 +964,12 @@
   font-size: 14px;
   color: #333;
   text-align: center;
+}
+
+/* 詳細画像用を定義 */
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #f3f3f3;
 }

@@ -2,6 +2,7 @@ import { useState, useContext } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import menuItems from '../data/menuItems'
 import { CartContext } from '../CartContext'
+import useStayRemaining from '../hooks/useStayRemaining'
 import '../menu.css'
 
 export default function ProductDetail() {
@@ -14,6 +15,7 @@ export default function ProductDetail() {
   const isDrinkItem = item?.category === 'drink'
   const isDrinkExcluded = Boolean(item?.drinkPlanExcluded)
   const shouldHidePrice = isDrinkPlan && isDrinkItem && !isDrinkExcluded
+  const { isExpired } = useStayRemaining()
 
   const [qty, setQty] = useState(1)
   if (!item) return <div>商品が見つかりません。</div>
@@ -22,6 +24,7 @@ export default function ProductDetail() {
   const dec = () => setQty((q) => (q > 1 ? q - 1 : 1))
 
   const handleAdd = () => {
+    if (isExpired) return
     for (let i = 0; i < qty; i++) {
       const price = shouldHidePrice ? 0 : item.price
       addToCart({ id: item.id, name: item.name, price })
@@ -68,7 +71,12 @@ export default function ProductDetail() {
             <button type="button" onClick={inc} className="qty-btn">+</button>
           </div>
 
-          <button type="button" className="add-to-cart big" onClick={handleAdd}>
+          <button
+            type="button"
+            className="add-to-cart big"
+            onClick={handleAdd}
+            disabled={isExpired}
+          >
             カートに入れる
           </button>
         </div>
@@ -76,3 +84,4 @@ export default function ProductDetail() {
     </div>
   )
 }
+

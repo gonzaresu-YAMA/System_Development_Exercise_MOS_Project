@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import { MenuLayout } from '../components/MenuLayout'
 import menuItems from '../data/menuItems'
+import useStayRemaining from '../hooks/useStayRemaining'
 import '../menu.css'
 
 const categoryLabels = {
@@ -17,6 +18,7 @@ export default function MenuPage() {
   const { category } = useParams()
   const selectedCourse = sessionStorage.getItem('selectedCourse') || ''
   const isDrinkPlan = selectedCourse.startsWith('drink')
+  const { isExpired } = useStayRemaining()
 
   const filtered = menuItems.filter((item) => item.category === category)
   const title = categoryLabels[category] || 'メニュー'
@@ -64,7 +66,7 @@ export default function MenuPage() {
                 <button
                   type="button"
                   className="cart-button"
-                  disabled={item.soldOut}
+                  disabled={item.soldOut || isExpired}
                   onClick={() => handleShowDetail(item)}
                 >
                   カートに入れる

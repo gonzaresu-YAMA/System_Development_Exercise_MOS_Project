@@ -1,22 +1,14 @@
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { CartContext } from '../CartContext'
+import { getRemainingSeconds, getStayUntil } from '../utils/stayTimer'
 import '../menu.css'
 
 export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick }) {
   const { cartCount } = useContext(CartContext)
   const navigate = useNavigate()
   const location = useLocation()
-  const initialRemainingSeconds = 30 * 60
-  const countdownStorageKey = 'mosRemainingUntil'
-  const [remainingSeconds, setRemainingSeconds] = useState(() => {
-    const storedUntil = Number(sessionStorage.getItem(countdownStorageKey))
-    const now = Date.now()
-    if (storedUntil && storedUntil > now) {
-      return Math.max(0, Math.ceil((storedUntil - now) / 1000))
-    }
-    return initialRemainingSeconds
-  })
+  const [remainingSeconds, setRemainingSeconds] = useState(() => getRemainingSeconds())
 
   const remainingLabel = useMemo(() => {
     const minutes = Math.floor(remainingSeconds / 60)
@@ -25,15 +17,7 @@ export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick 
   }, [remainingSeconds])
 
   useEffect(() => {
-    const storedUntil = Number(sessionStorage.getItem(countdownStorageKey))
-    const now = Date.now()
-    const initialUntil = storedUntil && storedUntil > now
-      ? storedUntil
-      : now + initialRemainingSeconds * 1000
-
-    if (initialUntil !== storedUntil) {
-      sessionStorage.setItem(countdownStorageKey, String(initialUntil))
-    }
+    const initialUntil = getStayUntil()
 
     const updateRemaining = () => {
       const diffSeconds = Math.max(0, Math.ceil((initialUntil - Date.now()) / 1000))
@@ -55,6 +39,7 @@ export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick 
   }
 
   const showBackButton = location.pathname !== '/menu'
+  const isExpired = remainingSeconds <= 0
 
       // 滞在時間については本来はサーバーからの情報を元に計算するべきですが、DB実装までは固定値で表示しています
   return (
@@ -95,15 +80,28 @@ export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick 
               備品
             </Link>
 
-            <Link
-              to="/order-confirm"
-              className={`circle-button badge-parent ${activeTab === 'hold' ? 'is-active' : ''}`}
-            >
-              注文
-              <br />
-              保留
-              <span className="badge">{cartCount}</span>
-            </Link>
+            {isExpired ? (
+              <button
+                type="button"
+                className="circle-button badge-parent is-disabled"
+                disabled
+              >
+                注文
+                <br />
+                保留
+                <span className="badge">{cartCount}</span>
+              </button>
+            ) : (
+              <Link
+                to="/order-confirm"
+                className={`circle-button badge-parent ${activeTab === 'hold' ? 'is-active' : ''}`}
+              >
+                注文
+                <br />
+                保留
+                <span className="badge">{cartCount}</span>
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -114,8 +112,9 @@ export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick 
         {showCheckout ? (
           <button
             type="button"
-            className={`footer-button checkout-button ${activeTab === 'categories' ? 'is-current' : ''}`}
+            className={`footer-button checkout-button ${activeTab === 'categories' ? 'is-current' : ''} ${isExpired ? 'is-disabled' : ''}`}
             onClick={onCheckoutClick}
+            disabled={isExpired}
           >
             お会計
           </button>
@@ -128,13 +127,24 @@ export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick 
           </Link>
         )}
 
-        <Link
-          to="/order-send"
-          className={`footer-button badge-parent ${activeTab === 'send' ? 'is-current' : ''}`}
-        >
-          注文送信
-          <span className="badge">{cartCount}</span>
-        </Link>
+        {isExpired ? (
+          <button
+            type="button"
+            className={`footer-button badge-parent ${activeTab === 'send' ? 'is-current' : ''} is-disabled`}
+            disabled
+          >
+            注文送信
+            <span className="badge">{cartCount}</span>
+          </button>
+        ) : (
+          <Link
+            to="/order-send"
+            className={`footer-button badge-parent ${activeTab === 'send' ? 'is-current' : ''}`}
+          >
+            注文送信
+            <span className="badge">{cartCount}</span>
+          </Link>
+        )}
 
         <Link
           to="/call-staff"
