@@ -104,6 +104,12 @@ export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick 
             )}
           </div>
         </div>
+
+        {isExpired && (
+          <div className="stay-expired-banner" role="status" aria-live="polite">
+            滞在時間が終了しました。注文はできません。
+          </div>
+        )}
       </header>
 
       <main className="menu-content">{children}</main>
