@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { startStayTimer } from '../utils/stayTimer'
+import { resetStayTimer } from '../utils/stayTimer'
 import '../menu.css'
 
 const rootPlans = [
@@ -33,7 +33,7 @@ export default function CourseSelectPage() {
 		if (!pendingCourse) return
 		sessionStorage.setItem('selectedCourse', pendingCourse.id)
 		sessionStorage.setItem('selectedCourseLabel', pendingCourse.label)
-		startStayTimer()
+		resetStayTimer()
 		navigate('/home')
 	}
 

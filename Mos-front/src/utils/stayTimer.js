@@ -7,6 +7,8 @@ export const startStayTimer = () => {
   return initialUntil
 }
 
+export const resetStayTimer = () => startStayTimer()
+
 export const getStayUntil = () => {
   const storedUntil = Number(sessionStorage.getItem(countdownStorageKey))
 
