@@ -339,6 +339,13 @@
   text-align: right;
 }
 
+.drink-excluded-label {
+  margin: 0 0 4px;
+  font-size: 11px;
+  color: #b12a20;
+  font-weight: 600;
+}
+
 .cart-button {
   display: block;
   margin-left: auto;

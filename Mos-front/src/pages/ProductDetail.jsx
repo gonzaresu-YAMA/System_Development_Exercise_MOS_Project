@@ -12,6 +12,8 @@ export default function ProductDetail() {
   const selectedCourse = sessionStorage.getItem('selectedCourse') || ''
   const isDrinkPlan = selectedCourse.startsWith('drink')
   const isDrinkItem = item?.category === 'drink'
+  const isDrinkExcluded = Boolean(item?.drinkPlanExcluded)
+  const shouldHidePrice = isDrinkPlan && isDrinkItem && !isDrinkExcluded
 
   const [qty, setQty] = useState(1)
   if (!item) return <div>商品が見つかりません。</div>
@@ -21,7 +23,7 @@ export default function ProductDetail() {
 
   const handleAdd = () => {
     for (let i = 0; i < qty; i++) {
-      const price = isDrinkPlan && isDrinkItem ? 0 : item.price
+      const price = shouldHidePrice ? 0 : item.price
       addToCart({ id: item.id, name: item.name, price })
     }
     navigate('/menu')
@@ -52,9 +54,13 @@ export default function ProductDetail() {
           <div className="product-detail-row">
             <h2 className="product-detail-name">{item.name}</h2>
             <p className="product-detail-price">
-              {isDrinkPlan && isDrinkItem ? '' : `¥${item.price}`}
+              {shouldHidePrice ? '' : `¥${item.price}`}
             </p>
           </div>
+
+          {isDrinkItem && isDrinkExcluded && (
+            <p className="drink-excluded-label">飲み放題対象外</p>
+          )}
 
           <div className="qty-controls">
             <button type="button" onClick={dec} className="qty-btn">-</button>

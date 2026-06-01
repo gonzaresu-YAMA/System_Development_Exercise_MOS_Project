@@ -33,7 +33,12 @@ export default function MenuPage() {
         <div className="menu-empty">このカテゴリの商品はまだありません。</div>
       ) : (
         <div className="menu-grid">
-          {filtered.map((item) => (
+          {filtered.map((item) => {
+            const isDrinkItem = item.category === 'drink'
+            const isDrinkExcluded = Boolean(item.drinkPlanExcluded)
+            const shouldHidePrice = isDrinkPlan && isDrinkItem && !isDrinkExcluded
+
+            return (
             <div
               key={item.id}
               className={`menu-card ${item.soldOut ? 'is-sold-out' : ''}`}
@@ -49,8 +54,11 @@ export default function MenuPage() {
 
               <div className="menu-card-body">
                 <p className="menu-item-name">{item.name}</p>
+                {isDrinkItem && isDrinkExcluded && (
+                  <p className="drink-excluded-label">飲み放題対象外</p>
+                )}
                 <p className="menu-item-price">
-                  {isDrinkPlan && item.category === 'drink' ? '' : `${item.price}￥`}
+                  {shouldHidePrice ? '' : `${item.price}￥`}
                 </p>
 
                 <button
@@ -63,7 +71,7 @@ export default function MenuPage() {
                 </button>
               </div>
             </div>
-          ))}
+          )})}
         </div>
       )}
     </MenuLayout>
