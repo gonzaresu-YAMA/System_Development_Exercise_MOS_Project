@@ -40,6 +40,8 @@ export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick 
 
   const showBackButton = location.pathname !== '/menu'
   const isExpired = remainingSeconds <= 0
+  const warningThresholdSeconds = 10 * 60
+  const isExpiringSoon = remainingSeconds > 0 && remainingSeconds <= warningThresholdSeconds
 
   const handleExpiredCheckout = () => {
     navigate('/checkout')
@@ -108,6 +110,12 @@ export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick 
             )}
           </div>
         </div>
+
+        {isExpiringSoon && !isExpired && (
+          <div className="stay-warning-banner" role="status" aria-live="polite">
+            まもなく滞在時間が終了します。滞在時間が0になると注文ができなくなります。
+          </div>
+        )}
 
       </header>
 

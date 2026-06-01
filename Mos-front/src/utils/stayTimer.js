@@ -1,17 +1,20 @@
-const initialRemainingSeconds = 1 * 60
+const initialRemainingSeconds = 11 * 60
 const countdownStorageKey = 'mosRemainingUntil'
+
+export const startStayTimer = () => {
+  const initialUntil = Date.now() + initialRemainingSeconds * 1000
+  sessionStorage.setItem(countdownStorageKey, String(initialUntil))
+  return initialUntil
+}
 
 export const getStayUntil = () => {
   const storedUntil = Number(sessionStorage.getItem(countdownStorageKey))
-  const now = Date.now()
 
   if (storedUntil) {
     return storedUntil
   }
 
-  const initialUntil = now + initialRemainingSeconds * 1000
-  sessionStorage.setItem(countdownStorageKey, String(initialUntil))
-  return initialUntil
+  return Date.now()
 }
 
 export const getRemainingSeconds = () => {
