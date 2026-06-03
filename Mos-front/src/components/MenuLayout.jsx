@@ -11,6 +11,12 @@ export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick 
   const [remainingSeconds, setRemainingSeconds] = useState(() => getRemainingSeconds())
 
   const remainingLabel = useMemo(() => {
+    if (remainingSeconds >= 60 * 60) {
+      const hours = Math.floor(remainingSeconds / 3600)
+      const minutes = Math.floor((remainingSeconds % 3600) / 60)
+      return `${hours}時間${String(minutes).padStart(2, '0')}分`
+    }
+
     const minutes = Math.floor(remainingSeconds / 60)
     const seconds = remainingSeconds % 60
     return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`

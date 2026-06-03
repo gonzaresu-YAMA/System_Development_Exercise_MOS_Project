@@ -1,8 +1,19 @@
-const initialRemainingSeconds = 11 * 60
+const defaultRemainingSeconds = 90 * 60
 const countdownStorageKey = 'mosRemainingUntil'
+const selectedCourseKey = 'selectedCourse'
+
+const getInitialRemainingSeconds = () => {
+  const selectedCourse = sessionStorage.getItem(selectedCourseKey)
+
+  if (selectedCourse === 'drink-2h') return 120 * 60
+  if (selectedCourse === 'drink-3h') return 180 * 60
+  if (selectedCourse === 'normal') return 90 * 60
+
+  return defaultRemainingSeconds
+}
 
 export const startStayTimer = () => {
-  const initialUntil = Date.now() + initialRemainingSeconds * 1000
+  const initialUntil = Date.now() + getInitialRemainingSeconds() * 1000
   sessionStorage.setItem(countdownStorageKey, String(initialUntil))
   return initialUntil
 }
