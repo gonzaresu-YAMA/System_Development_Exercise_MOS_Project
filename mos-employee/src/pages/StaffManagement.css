@@ -247,3 +247,14 @@
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
+
+.confirmText {
+  margin: 0;
+  opacity: 0.85;
+  line-height: 1.5;
+}
+
+.hint {
+  font-size: 12px;
+  opacity: 0.75;
+}

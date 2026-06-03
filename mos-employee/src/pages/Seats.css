@@ -307,3 +307,22 @@
   font-weight: 900;
   cursor: pointer;
 }
+
+.seatsHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.floorBackBtn {
+  border: 1px solid rgba(0,0,0,0.14);
+  background: #fff;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.floorBackBtn:hover {
+  background: rgba(0,0,0,0.04);
+}

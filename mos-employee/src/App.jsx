@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './App.css'
+
 import { authenticate } from './staffDb'
 import { setUser, clearUseCase } from './auth'
 
 function App() {
   const navigate = useNavigate()
+
   const [id, setId] = useState('')
   const [pw, setPw] = useState('')
   const [error, setError] = useState('')
@@ -16,13 +18,13 @@ function App() {
     e.preventDefault()
     setError('')
 
-    const res = authenticate(id.trim(), pw)
-    if (!res.ok) {
-      setError(res.reason)
+    const result = authenticate(id.trim(), pw)
+    if (!result.ok) {
+      setError(result.reason)
       return
     }
 
-    setUser(res.user)
+    setUser(result.user)
     clearUseCase()
     navigate('/employee', { replace: true })
   }
@@ -39,7 +41,7 @@ function App() {
         <div className="inputGroup">
           <input
             type="text"
-            placeholder="ID（例：S0001 / A0001）"
+            placeholder="ID（例：S000001 / A000001）"
             value={id}
             onChange={(e) => setId(e.target.value)}
             autoComplete="username"
@@ -56,7 +58,20 @@ function App() {
           />
         </div>
 
-        {error && <div style={{ padding: 10, borderRadius: 12, background: 'rgba(255,59,48,0.12)', fontWeight: 900 }}>{error}</div>}
+        {error && (
+          <div
+            style={{
+              padding: 10,
+              borderRadius: 12,
+              background: 'rgba(255,59,48,0.12)',
+              border: '1px solid rgba(255,59,48,0.20)',
+              fontWeight: 900,
+              fontSize: 13,
+            }}
+          >
+            {error}
+          </div>
+        )}
 
         <button className="primaryBtn" type="submit" disabled={!canSubmit}>
           ログイン

@@ -11,7 +11,7 @@ const statusByKey = Object.fromEntries(STATUS_LIST.map(s => [s.key, s]))
 
 const makeSeats = (floor) => {
   const start = floor === 1 ? 101 : 201
-  const count = 12 // 必要なら席数をここで増減
+  const count = 12
   return Array.from({ length: count }, (_, i) => ({
     id: `T${start + i}`,
     status: 'empty',
@@ -23,7 +23,7 @@ function Seats() {
   // フロア選択：null=未選択 / 1=1階 / 2=2階
   const [floor, setFloor] = useState(null)
 
-  // 座席データ（階ごとに持つ）
+  // 座席データ（階ごと）
   const [seats1F, setSeats1F] = useState(() => makeSeats(1))
   const [seats2F, setSeats2F] = useState(() => makeSeats(2))
 
@@ -33,11 +33,11 @@ function Seats() {
     return []
   }, [floor, seats1F, seats2F])
 
-  // 確認ポップ：空席→使用中（QR）/ 使用中→会計済
-  // confirm: { mode: 'start'|'pay', seat }
+  // 確認ポップ（空席→使用中 / 使用中→会計済）
   const [confirm, setConfirm] = useState(null)
+  // confirm: { mode: 'start'|'pay', seat }
 
-  // 編集モーダル（編集ボタン押下時のみ）
+  // 編集モーダル
   const [draft, setDraft] = useState(null)
   const [dropOpen, setDropOpen] = useState(false)
 
@@ -71,7 +71,7 @@ function Seats() {
       setConfirm({ mode: 'pay', seat })
       return
     }
-    // paid/stop は何もしない（必要ならここを編集へ変更してもOK）
+    // paid / stop は何もしない（必要なら後で編集へ変更可能）
   }
 
   // 編集（編集ボタンのみ）
@@ -80,10 +80,12 @@ function Seats() {
     setDropOpen(false)
     setConfirm(null)
   }
+
   const closeEdit = () => {
     setDraft(null)
     setDropOpen(false)
   }
+
   const applyEdit = () => {
     if (!draft) return
     updateSeat(draft)
@@ -120,6 +122,14 @@ function Seats() {
     updateSeat({ ...seat, status: 'empty', people: 0 })
   }
 
+  // ✅ 一覧から階選択へ戻る
+  const backToFloorSelect = () => {
+    setFloor(null)
+    setConfirm(null)
+    setDraft(null)
+    setDropOpen(false)
+  }
+
   // ------- ① フロア選択画面 -------
   if (floor == null) {
     return (
@@ -145,12 +155,16 @@ function Seats() {
   return (
     <section className="seats">
       <div className="seatsHeader">
-        <h2 className="seatsTitle">座席管理</h2>
+        {/* ✅ 戻るボタン追加 */}
+        <div className="seatsHeaderLeft">
+          <button className="floorBackBtn" onClick={backToFloorSelect} type="button">
+            ← 戻る
+          </button>
+          <h2 className="seatsTitle">座席管理</h2>
+        </div>
+
         <div className="floorBadge">
           {floor === 1 ? '1階' : '2階'}
-          <button className="floorChange" onClick={() => setFloor(null)} type="button">
-            変更
-          </button>
         </div>
       </div>
 
@@ -307,27 +321,14 @@ function Seats() {
               </div>
             </div>
 
-            {/* QR発行ボタンは出さない（要望どおり） */}
-
-            
-          <div className="modalActions three">
-            <button
-              className="qrReissueBtn"
-              type="button"
-              onClick={() => reissueQR(draft)}
-            >
-            QRコードを再発行する
-            </button>
-
-            <button className="confirmBtn" onClick={applyEdit} type="button">
-              確定
-            </button>
-
-            <button className="backBtn" onClick={closeEdit} type="button">
-              戻る
-            </button>
-          </div>
-
+            <div className="modalActions">
+              <button className="confirmBtn" onClick={applyEdit} type="button">
+                確定
+              </button>
+              <button className="backBtn" onClick={closeEdit} type="button">
+                戻る
+              </button>
+            </div>
           </div>
         </>
       )}

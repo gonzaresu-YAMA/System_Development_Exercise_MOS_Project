@@ -1,53 +1,62 @@
 import { useEffect, useMemo, useState } from 'react'
 import './StaffManagement.css'
 
-const STORAGE_KEY = 'staffList_v1'
-
-const ROLE_LABEL = {
-  manager: '店長',
-  staff: '従業員',
-}
-
-const defaultStaff = [
-  { id: 'S001', name: '山田 太郎', role: 'staff', active: true },
-  { id: 'S002', name: '佐藤 花子', role: 'manager', active: true },
-  { id: 'S003', name: '鈴木 一郎', role: 'staff', active: false },
-]
-
-function loadStaff() {
-  const raw = sessionStorage.getItem(STORAGE_KEY)
-  if (!raw) return defaultStaff
-  try {
-    const parsed = JSON.parse(raw)
-    if (Array.isArray(parsed)) return parsed
-    return defaultStaff
-  } catch {
-    return defaultStaff
-  }
-}
-
-function saveStaff(list) {
-  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(list))
-}
+import {
+  loadStaff,
+  saveStaff,
+  ROLE_LABEL,
+  getDefaultUseCasesFromRole,
+  generateIdByRole,
+} from '../staffDb'
 
 function StaffManagement({ onBack }) {
   const [staff, setStaff] = useState(() => loadStaff())
-
   const [query, setQuery] = useState('')
-  const [filter, setFilter] = useState('all') // all | active | inactive
 
-  // modal
+  // 初期表示は「有効のみ」
+  const [filter, setFilter] = useState('active') // all | active | inactive
+
+  // add/edit modal
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState('add') // add | edit
-  const [form, setForm] = useState({ id: '', name: '', role: 'staff', active: true })
+  const [form, setForm] = useState({
+    id: '',
+    name: '',
+    role: 'employee', // manager | employee | partTime
+    active: true,
+    password: '',
+    passwordConfirm: '',
+    allowedUseCases: ['hall', 'kitchen', 'admin'],
+  })
   const [error, setError] = useState('')
+
+  // 有効/無効 切替の確認ポップ
+  const [confirmTarget, setConfirmTarget] = useState(null)
+
+  // パスワード変更確認ポップ
+  const [passwordConfirmTarget, setPasswordConfirmTarget] = useState(null)
 
   useEffect(() => {
     saveStaff(staff)
   }, [staff])
 
+  // ESCで閉じる
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setOpen(false)
+        setConfirmTarget(null)
+        setPasswordConfirmTarget(null)
+        setError('')
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [])
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
+
     return staff
       .filter((s) => {
         if (filter === 'active') return s.active
@@ -62,7 +71,6 @@ function StaffManagement({ onBack }) {
           ROLE_LABEL[s.role].toLowerCase().includes(q)
         )
       })
-      // 表示順：有効 → 無効、店長 → 従業員、ID昇順
       .sort((a, b) => {
         if (a.active !== b.active) return a.active ? -1 : 1
         if (a.role !== b.role) return a.role === 'manager' ? -1 : 1
@@ -71,15 +79,28 @@ function StaffManagement({ onBack }) {
   }, [staff, query, filter])
 
   const openAdd = () => {
+    const defaultRole = 'employee'
     setMode('add')
-    setForm({ id: '', name: '', role: 'staff', active: true })
+    setForm({
+      id: generateIdByRole(defaultRole),
+      name: '',
+      role: defaultRole,
+      active: true,
+      password: '',
+      passwordConfirm: '',
+      allowedUseCases: getDefaultUseCasesFromRole(defaultRole),
+    })
     setError('')
     setOpen(true)
   }
 
   const openEdit = (s) => {
     setMode('edit')
-    setForm({ ...s })
+    setForm({
+      ...s,
+      password: '',         // 編集時は空欄なら変更なし
+      passwordConfirm: '',
+    })
     setError('')
     setOpen(true)
   }
@@ -89,17 +110,58 @@ function StaffManagement({ onBack }) {
     setError('')
   }
 
+  // 役職を変えたら IDと用途を自動で反映（追加時のみ）
+  const handleRoleChange = (role) => {
+    setForm((prev) => {
+      if (mode === 'add') {
+        return {
+          ...prev,
+          role,
+          id: generateIdByRole(role),
+          allowedUseCases: getDefaultUseCasesFromRole(role),
+        }
+      }
+      // 編集時は role と allowedUseCasesだけ更新（IDは変えない）
+      return {
+        ...prev,
+        role,
+        allowedUseCases: getDefaultUseCasesFromRole(role),
+      }
+    })
+  }
+
   const validate = () => {
     const id = form.id.trim()
     const name = form.name.trim()
-    if (!id) return 'IDを入力してください'
+
+    if (!id) return 'IDが空です'
     if (!name) return '名前を入力してください'
 
+    // 追加時はパスワード必須
     if (mode === 'add') {
-      const exists = staff.some((s) => s.id.toLowerCase() === id.toLowerCase())
-      if (exists) return '同じIDがすでに存在します'
+      if (!form.password) return 'パスワードを入力してください'
+      if (form.password.length < 4) return 'パスワードは4文字以上にしてください'
+      if (form.password !== form.passwordConfirm) return '確認用パスワードが一致しません'
     }
+
+    // 編集時：入力がある時だけ変更チェック
+    if (mode === 'edit' && form.password) {
+      if (form.password.length < 4) return 'パスワードは4文字以上にしてください'
+      if (form.password !== form.passwordConfirm) return '確認用パスワードが一致しません'
+    }
+
     return ''
+  }
+
+  const buildPayload = () => {
+    return {
+      id: form.id.trim(),
+      name: form.name.trim(),
+      role: form.role,
+      active: mode === 'add' ? true : !!form.active,
+      password: form.password, // 追加時は必須、編集時は空なら既存を残す
+      allowedUseCases: getDefaultUseCasesFromRole(form.role),
+    }
   }
 
   const save = () => {
@@ -109,26 +171,65 @@ function StaffManagement({ onBack }) {
       return
     }
 
-    const payload = {
-      id: form.id.trim(),
-      name: form.name.trim(),
-      role: form.role,
-      active: !!form.active,
+    const payload = buildPayload()
+
+    // 編集時にパスワード変更があるなら確認ポップ
+    if (mode === 'edit' && form.password) {
+      setPasswordConfirmTarget({ payload })
+      return
     }
 
+    commitSave(payload)
+  }
+
+  const commitSave = (payload) => {
     if (mode === 'add') {
-      setStaff((prev) => [payload, ...prev])
+      setStaff((prev) => [
+        {
+          ...payload,
+          active: true,
+        },
+        ...prev,
+      ])
     } else {
-      setStaff((prev) => prev.map((s) => (s.id === payload.id ? payload : s)))
+      setStaff((prev) =>
+        prev.map((s) =>
+          s.id === payload.id
+            ? {
+                ...s,
+                name: payload.name,
+                role: payload.role,
+                active: payload.active,
+                allowedUseCases: payload.allowedUseCases,
+                password: payload.password ? payload.password : s.password,
+              }
+            : s
+        )
+      )
     }
 
+    setPasswordConfirmTarget(null)
     closeModal()
   }
 
-  const toggleActive = (id) => {
-    setStaff((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, active: !s.active } : s))
-    )
+  const requestToggleActive = (s) => {
+    setConfirmTarget({ id: s.id, name: s.name, nextActive: !s.active })
+  }
+
+  const cancelToggle = () => setConfirmTarget(null)
+
+  const confirmToggle = () => {
+    if (!confirmTarget) return
+    const { id, nextActive } = confirmTarget
+    setStaff((prev) => prev.map((s) => (s.id === id ? { ...s, active: nextActive } : s)))
+    setConfirmTarget(null)
+  }
+
+  const cancelPasswordConfirm = () => setPasswordConfirmTarget(null)
+
+  const confirmPasswordChange = () => {
+    if (!passwordConfirmTarget) return
+    commitSave(passwordConfirmTarget.payload)
   }
 
   return (
@@ -153,7 +254,7 @@ function StaffManagement({ onBack }) {
         <input
           className="input"
           value={query}
-          placeholder="検索（名前 / ID / 権限）"
+          placeholder="検索（名前 / ID / 役職）"
           onChange={(e) => setQuery(e.target.value)}
         />
 
@@ -204,7 +305,7 @@ function StaffManagement({ onBack }) {
               <button
                 className={`btn small ${s.active ? 'warn' : 'primary'}`}
                 type="button"
-                onClick={() => toggleActive(s.id)}
+                onClick={() => requestToggleActive(s)}
               >
                 {s.active ? '無効化' : '有効化'}
               </button>
@@ -223,7 +324,6 @@ function StaffManagement({ onBack }) {
       {open && (
         <>
           <div className="overlay" onClick={closeModal} />
-
           <div className="modal" role="dialog" aria-modal="true">
             <div className="modalTitle">
               {mode === 'add' ? '従業員追加' : '従業員編集'}
@@ -241,47 +341,78 @@ function StaffManagement({ onBack }) {
               </label>
 
               <label className="label">
-                ID（ログインID）
+                役職
+                <select
+                  className="input"
+                  value={form.role}
+                  onChange={(e) => handleRoleChange(e.target.value)}
+                >
+                  <option value="employee">社員</option>
+                  <option value="manager">店長</option>
+                  <option value="partTime">アルバイト</option>
+                </select>
+              </label>
+
+              {/* IDは自動採番で表示のみ */}
+              <label className="label">
+                従業員ID
                 <input
                   className="input"
                   value={form.id}
-                  onChange={(e) => setForm((p) => ({ ...p, id: e.target.value }))}
-                  placeholder="例：S001"
-                  disabled={mode === 'edit'}
+                  disabled
+                />
+              </label>
+
+              {/* 追加時は状態欄を出さない（自動で有効） */}
+              {mode === 'edit' && (
+                <label className="label row">
+                  状態
+                  <div className="toggle">
+                    <button
+                      type="button"
+                      className={`toggleBtn ${form.active ? 'active' : ''}`}
+                      onClick={() => setForm((p) => ({ ...p, active: true }))}
+                    >
+                      有効
+                    </button>
+                    <button
+                      type="button"
+                      className={`toggleBtn ${!form.active ? 'active' : ''}`}
+                      onClick={() => setForm((p) => ({ ...p, active: false }))}
+                    >
+                      無効
+                    </button>
+                  </div>
+                </label>
+              )}
+
+              <label className="label">
+                {mode === 'add' ? 'パスワード' : '新しいパスワード（変更時のみ）'}
+                <input
+                  className="input"
+                  type="password"
+                  value={form.password}
+                  onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
+                  placeholder={mode === 'add' ? '4文字以上' : '空欄なら変更しない'}
                 />
               </label>
 
               <label className="label">
-                権限
-                <select
+                {mode === 'add' ? 'パスワード（確認）' : '新しいパスワード（確認）'}
+                <input
                   className="input"
-                  value={form.role}
-                  onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))}
-                >
-                  <option value="staff">従業員</option>
-                  <option value="manager">店長</option>
-                </select>
+                  type="password"
+                  value={form.passwordConfirm}
+                  onChange={(e) => setForm((p) => ({ ...p, passwordConfirm: e.target.value }))}
+                  placeholder="再入力"
+                />
               </label>
 
-              <label className="label row">
-                状態
-                <div className="toggle">
-                  <button
-                    type="button"
-                    className={`toggleBtn ${form.active ? 'active' : ''}`}
-                    onClick={() => setForm((p) => ({ ...p, active: true }))}
-                  >
-                    有効
-                  </button>
-                  <button
-                    type="button"
-                    className={`toggleBtn ${!form.active ? 'active' : ''}`}
-                    onClick={() => setForm((p) => ({ ...p, active: false }))}
-                  >
-                    無効
-                  </button>
+              {mode === 'edit' && (
+                <div className="hint">
+                  ※ 空欄のまま保存するとパスワードは変更されません
                 </div>
-              </label>
+              )}
 
               {error && <div className="error">{error}</div>}
             </div>
@@ -292,6 +423,57 @@ function StaffManagement({ onBack }) {
               </button>
               <button className="btn primary" type="button" onClick={save}>
                 保存
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ===== 有効/無効 切替の確認ポップ ===== */}
+      {confirmTarget && (
+        <>
+          <div className="overlay" onClick={cancelToggle} />
+          <div className="modal" role="dialog" aria-modal="true">
+            <div className="modalTitle">確認</div>
+
+            <p className="confirmText">
+              <strong>{confirmTarget.name}</strong> を
+              {confirmTarget.nextActive ? '有効化' : '無効化'}しますか？
+            </p>
+
+            <div className="modalActions">
+              <button className="btn ghost" type="button" onClick={cancelToggle}>
+                キャンセル
+              </button>
+              <button
+                className={`btn ${confirmTarget.nextActive ? 'primary' : 'warn'}`}
+                type="button"
+                onClick={confirmToggle}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ===== パスワード変更確認ポップ ===== */}
+      {passwordConfirmTarget && (
+        <>
+          <div className="overlay" onClick={cancelPasswordConfirm} />
+          <div className="modal" role="dialog" aria-modal="true">
+            <div className="modalTitle">確認</div>
+
+            <p className="confirmText">
+              <strong>{form.name}</strong> のパスワードを変更しますか？
+            </p>
+
+            <div className="modalActions">
+              <button className="btn ghost" type="button" onClick={cancelPasswordConfirm}>
+                キャンセル
+              </button>
+              <button className="btn warn" type="button" onClick={confirmPasswordChange}>
+                変更する
               </button>
             </div>
           </div>
