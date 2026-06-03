@@ -27,13 +27,13 @@ export default function ProductDetail() {
     if (isExpired) return
     for (let i = 0; i < qty; i++) {
       const price = shouldHidePrice ? 0 : item.price
-      addToCart({ id: item.id, name: item.name, price })
+      addToCart({ id: item.id, name: item.name, price, image: item.image })
     }
     navigate('/menu')
   }
 
   return (
-    <div className="product-detail-screen">
+    <div className={`product-detail-screen product-detail-${item.category}`}>
       <header className="product-detail-header">
         <button
           type="button"

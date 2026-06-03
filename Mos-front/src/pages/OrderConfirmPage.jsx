@@ -2,6 +2,7 @@ import { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import { MenuLayout } from '../components/MenuLayout'
 import { CartContext } from '../CartContext'
+import menuItems from '../data/menuItems'
 import useStayRemaining from '../hooks/useStayRemaining'
 import '../menu.css'
 
@@ -9,11 +10,24 @@ export default function OrderConfirmPage() {
   const { cartItems, addToCart, removeFromCart } = useContext(CartContext)
   const { isExpired } = useStayRemaining()
 
+  const getFallbackImage = (item) => {
+    if (item.image) return item.image
+    const menuItem = menuItems.find((menu) => String(menu.id) === String(item.id) || menu.name === item.name)
+    return menuItem?.image || ''
+  }
+
   const grouped = cartItems.reduce((acc, item) => {
-    if (!acc[item.name]) {
-      acc[item.name] = { name: item.name, price: item.price, items: [] }
+    const key = `${String(item.id)}|${item.name}`
+    if (!acc[key]) {
+      acc[key] = {
+        name: item.name,
+        price: item.price,
+        itemId: item.id,
+        image: item.image || getFallbackImage(item),
+        items: []
+      }
     }
-    acc[item.name].items.push(item)
+    acc[key].items.push(item)
     return acc
   }, {})
 
@@ -27,7 +41,7 @@ export default function OrderConfirmPage() {
   }
 
   const handleAddOne = (group) => {
-    addToCart({ id: Date.now(), name: group.name, price: group.price })
+    addToCart({ id: group.itemId, name: group.name, price: group.price, image: group.image })
   }
 
   return (
@@ -38,6 +52,7 @@ export default function OrderConfirmPage() {
             <thead>
               <tr>
                 <th className="order-col-name">名称</th>
+                <th className="order-col-thumb">画像</th>
                 <th className="order-col-action">&nbsp;</th>
                 <th className="order-col-qty">数量</th>
               </tr>
@@ -46,6 +61,7 @@ export default function OrderConfirmPage() {
               {rows.length === 0 ? (
                 <tr>
                   <td className="order-col-name">&nbsp;</td>
+                  <td className="order-col-thumb">&nbsp;</td>
                   <td className="order-col-action">&nbsp;</td>
                   <td className="order-col-qty">&nbsp;</td>
                 </tr>
@@ -53,6 +69,13 @@ export default function OrderConfirmPage() {
                 rows.map((group) => (
                   <tr key={group.name}>
                     <td className="order-col-name">{group.name}</td>
+                    <td className="order-col-thumb">
+                      {group.image ? (
+                        <img src={group.image} alt={group.name} className="order-thumb" />
+                      ) : (
+                        <div className="order-thumb-placeholder" />
+                      )}
+                    </td>
                     <td className="order-col-action">
                       <div className="order-action-cell">
                         <button

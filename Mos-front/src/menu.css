@@ -339,15 +339,53 @@
 
 .menu-card {
   min-height: 120px;
-  background: #d7d7d7;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+  background: #fff7ef;
+  border-radius: 18px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
   overflow: hidden;
   position: relative;
+  border: 2px solid rgba(167, 53, 18, 0.3);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.menu-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+}
+
+.menu-card-free {
+  background: #f5f1e6;
+  border-color: rgba(120, 90, 50, 0.45);
+}
+
+.menu-card-yakitori {
+  background: #fff2ee;
+  border-color: rgba(167, 53, 18, 0.7);
+}
+
+.menu-card-rice {
+  background: #fffbf2;
+  border-color: rgba(118, 88, 45, 0.7);
+}
+
+.menu-card-speed {
+  background: #f5fff7;
+  border-color: rgba(24, 104, 67, 0.7);
+}
+
+.menu-card-drink {
+  background: #f2f7ff;
+  border-color: rgba(65, 86, 134, 0.7);
+}
+
+.menu-card-dessert {
+  background: #fff8ef;
+  border-color: rgba(159, 99, 40, 0.7);
 }
 
 .menu-image-area {
   height: 110px;
-  background: #fff;
+  background: #fff8f0;
   position: relative;
   overflow: hidden;
   padding: 0;
@@ -654,6 +692,47 @@
   gap: 12px;
   width: 100%;
   flex: 1;
+  border-top: 4px solid transparent;
+}
+
+.product-detail-screen.product-detail-free .product-detail-info {
+  background: #f6f0e8;
+  border-top-color: rgba(120, 90, 50, 0.7);
+}
+
+.product-detail-screen.product-detail-yakitori .product-detail-info {
+  background: #fff2ee;
+  border-top-color: rgba(167, 53, 18, 0.85);
+}
+
+.product-detail-screen.product-detail-rice .product-detail-info {
+  background: #fffbf2;
+  border-top-color: rgba(118, 88, 45, 0.85);
+}
+
+.product-detail-screen.product-detail-speed .product-detail-info {
+  background: #f5fff7;
+  border-top-color: rgba(24, 104, 67, 0.85);
+}
+
+.product-detail-screen.product-detail-drink .product-detail-info {
+  background: #f2f7ff;
+  border-top-color: rgba(65, 86, 134, 0.85);
+}
+
+.product-detail-screen.product-detail-dessert .product-detail-info {
+  background: #fff8ef;
+  border-top-color: rgba(159, 99, 40, 0.85);
+}
+
+.product-detail-screen.product-detail-yakitori .product-detail-header,
+.product-detail-screen.product-detail-rice .product-detail-header,
+.product-detail-screen.product-detail-speed .product-detail-header,
+.product-detail-screen.product-detail-drink .product-detail-header,
+.product-detail-screen.product-detail-dessert .product-detail-header,
+.product-detail-screen.product-detail-free .product-detail-header {
+  background: rgba(255, 255, 255, 0.92);
+  color: #2a1f16;
 }
 
 .product-detail-row {
@@ -806,9 +885,12 @@
 }
 
 .order-confirm-card {
-  background: #fff;
-  border: 2px solid #111;
+  background: #fffdf7;
+  border: 2px solid rgba(167, 53, 18, 0.55);
   padding: 0;
+  border-radius: 22px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+  overflow: hidden;
 }
 
 .order-table {
@@ -826,18 +908,40 @@
 }
 
 .order-col-name {
-  width: 55%;
+  width: 40%;
   text-align: left;
 }
 
+.order-col-thumb {
+  width: 16%;
+  text-align: center;
+}
+
 .order-col-action {
-  width: 25%;
+  width: 24%;
   text-align: center;
 }
 
 .order-col-qty {
   width: 20%;
   text-align: center;
+}
+
+.order-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+}
+
+.order-thumb-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: #f2f2f2;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  margin: 0 auto;
 }
 
 .order-action-cell {
@@ -959,32 +1063,68 @@
   max-width: 520px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
 }
 
 .category-card {
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  background: #fff7ef;
+  border-radius: 22px 12px 22px 12px;
+  border: 2px solid rgba(167, 53, 18, 0.3);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
   text-decoration: none;
-  color: #111;
+  color: #221b12;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px;
+  padding: 14px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.category-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+}
+
+.category-card-free {
+  border-color: rgba(120, 90, 50, 0.45);
+}
+
+.category-card-yakitori {
+  border-color: rgba(167, 53, 18, 0.7);
+  background: #fff2ed;
+}
+
+.category-card-rice {
+  border-color: rgba(118, 88, 45, 0.7);
+  background: #fffbf3;
+}
+
+.category-card-speed {
+  border-color: rgba(24, 104, 67, 0.7);
+  background: #f7fff7;
+}
+
+.category-card-drink {
+  border-color: rgba(65, 86, 134, 0.7);
+  background: #f3f7ff;
+}
+
+.category-card-dessert {
+  border-color: rgba(159, 99, 40, 0.7);
+  background: #fff7ea;
 }
 
 .category-card.is-current {
-  background: #e1e1e1;
-  border: 2px solid #777;
+  background: #f2e4d8;
+  border-color: #80512f;
 }
 
 .category-image-area {
   width: 100%;
   height: 90px;
-  background: #fff;
+  background: #fff8f0;
   display: flex;
   align-items: center;
   justify-content: center;

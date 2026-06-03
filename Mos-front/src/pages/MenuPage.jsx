@@ -43,7 +43,7 @@ export default function MenuPage() {
             return (
             <div
               key={item.id}
-              className={`menu-card ${item.soldOut ? 'is-sold-out' : ''}`}
+              className={`menu-card menu-card-${item.category} ${item.soldOut ? 'is-sold-out' : ''}`}
             >
               <div className="menu-image-area">
                 {item.image ? (
