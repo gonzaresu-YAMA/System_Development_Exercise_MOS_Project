@@ -40,6 +40,14 @@
   opacity: 0.9;
 }
 
+.menu-header-title {
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 14px;
+}
+
 /* =========================
    コース選択
 ========================= */

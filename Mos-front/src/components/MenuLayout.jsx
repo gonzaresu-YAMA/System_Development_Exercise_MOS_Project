@@ -69,6 +69,7 @@ export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick 
           </button>
         )}
 
+        <div className="menu-header-title">居酒屋みどり亭</div>
         <div className="menu-header-content">
           <div className="remaining-time">
             <span>滞在時間</span>
