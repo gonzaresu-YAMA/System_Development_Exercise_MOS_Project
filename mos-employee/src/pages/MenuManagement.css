@@ -1,4 +1,6 @@
-.menuPage { padding: 10px 0; }
+.menuPage {
+  padding: 10px 0;
+}
 
 .menuHeader {
   display: flex;
@@ -14,17 +16,14 @@
   font-weight: 900;
 }
 
-.menuSub {
-  margin-top: 4px;
-  font-size: 12px;
-  opacity: 0.75;
+.menuHeaderActions {
+  display: flex;
+  gap: 10px;
 }
-
-.menuHeaderActions { display: flex; gap: 10px; }
 
 .tabs {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
   margin-bottom: 10px;
 }
@@ -38,12 +37,8 @@
   cursor: pointer;
 }
 
-.tab.active { background: rgba(0,0,0,0.10); }
-
-.controls {
-  display: grid;
-  gap: 10px;
-  margin-bottom: 12px;
+.tab.active {
+  background: rgba(0,0,0,0.10);
 }
 
 .input {
@@ -54,25 +49,13 @@
   background: #fff;
   font-size: 16px;
   box-sizing: border-box;
+  margin-bottom: 12px;
 }
 
-.seg2 {
+.list {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 10px;
 }
-
-.segBtn {
-  padding: 10px 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.14);
-  background: #fff;
-  font-weight: 900;
-  cursor: pointer;
-}
-.segBtn.active { background: rgba(0,0,0,0.10); }
-
-.list { display: grid; gap: 10px; }
 
 .row {
   background: #fff;
@@ -86,22 +69,43 @@
   gap: 12px;
 }
 
-.row.soldOut { opacity: 0.78; }
+.main {
+  min-width: 0;
+}
 
-.main { min-width: 0; }
-.nameLine { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.name { font-size: 18px; font-weight: 900; }
+.nameLine {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
 
-.badge {
+.name {
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
   font-size: 12px;
   font-weight: 900;
   padding: 4px 8px;
   border-radius: 999px;
-  background: rgba(255, 59, 48, 0.14);
-  border: 1px solid rgba(255, 59, 48, 0.20);
+  background: rgba(47, 128, 237, 0.12);
+  border: 1px solid rgba(47, 128, 237, 0.20);
 }
 
-.meta { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
+.meta {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
 
 .chip {
   font-size: 12px;
@@ -112,25 +116,26 @@
   border: 1px solid rgba(0,0,0,0.10);
 }
 
-.actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.dangerChip {
+  background: rgba(255, 59, 48, 0.12);
+  border-color: rgba(255, 59, 48, 0.20);
+}
 
-.priceActions {
+.badge {
+  font-size: 12px;
+  font-weight: 900;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 59, 48, 0.14);
+  border: 1px solid rgba(255, 59, 48, 0.20);
+}
+
+.actions {
   display: flex;
   gap: 8px;
   align-items: center;
   flex-wrap: wrap;
   justify-content: flex-end;
-}
-
-.priceInput {
-  width: 110px;
-  padding: 10px 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.14);
-  background: #fff;
-  font-size: 16px;
-  font-weight: 900;
-  text-align: right;
 }
 
 .btn {
@@ -142,7 +147,11 @@
   cursor: pointer;
 }
 
-.btn.small { padding: 8px 10px; border-radius: 10px; font-size: 14px; }
+.btn.small {
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 14px;
+}
 
 .btn.primary {
   background: #2f80ed;
@@ -150,7 +159,9 @@
   color: #fff;
 }
 
-.btn.ghost { background: #fff; }
+.btn.ghost {
+  background: #fff;
+}
 
 .btn.warn {
   background: rgba(255, 59, 48, 0.12);
@@ -165,7 +176,7 @@
   opacity: 0.8;
 }
 
-/* ===== modal ===== */
+/* modal */
 .overlay {
   position: fixed;
   inset: 0;
@@ -178,7 +189,7 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: min(420px, calc(100% - 24px));
+  width: min(460px, calc(100% - 24px));
   background: #fff;
   border-radius: 16px;
   border: 1px solid rgba(0,0,0,0.10);
@@ -187,9 +198,16 @@
   z-index: 6000;
 }
 
-.modalTitle { font-size: 18px; font-weight: 900; margin-bottom: 10px; }
+.modalTitle {
+  font-size: 18px;
+  font-weight: 900;
+  margin-bottom: 10px;
+}
 
-.form { display: grid; gap: 10px; }
+.form {
+  display: grid;
+  gap: 10px;
+}
 
 .label {
   display: grid;
@@ -199,20 +217,12 @@
   opacity: 0.85;
 }
 
-.label.row { grid-template-columns: 60px 1fr; align-items: center; }
-
-.toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-
-.toggleBtn {
-  padding: 10px 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.14);
-  background: #fff;
-  font-weight: 900;
-  cursor: pointer;
+.modalActions {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
-
-.toggleBtn.active { background: rgba(0,0,0,0.10); }
 
 .error {
   padding: 10px 12px;
@@ -223,65 +233,107 @@
   font-size: 13px;
 }
 
-.modalActions {
-  margin-top: 12px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
 .confirmText {
   margin: 0;
   opacity: 0.85;
   line-height: 1.5;
 }
-.soldoutToolbar {
+
+/* タグ一覧 */
+.tagManager {
+  display: grid;
+  gap: 12px;
+}
+
+.tagAddBox {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.tagList {
   display: grid;
   gap: 10px;
 }
 
-@media (min-width: 720px) {
-  .soldoutToolbar {
-    grid-template-columns: 1fr auto;
-    align-items: center;
-  }
-}
-
-/* Undoバー */
-.undoBar {
-  position: fixed;
-  left: 50%;
-  bottom: 20px;
-  transform: translateX(-50%);
-  width: min(420px, calc(100% - 24px));
-  background: #111;
-  color: #fff;
+.tagRow {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.10);
   border-radius: 14px;
-  padding: 12px 14px;
+  padding: 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  box-shadow: 0 14px 30px rgba(0,0,0,0.24);
-  z-index: 7000;
 }
 
-.undoText {
-  font-size: 14px;
-  line-height: 1.4;
+/* タグ選択 */
+.tagSelector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.undoBtn {
-  border: 1px solid rgba(255,255,255,0.25);
-  background: #fff;
-  color: #111;
-  border-radius: 10px;
+.tagPick {
   padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.14);
+  background: #fff;
   font-weight: 900;
   cursor: pointer;
-  white-space: nowrap;
+  font-size: 13px;
 }
 
-.undoBtn:hover {
-  opacity: 0.92;
+.tagPick.active {
+  background: rgba(47, 128, 237, 0.12);
+  border-color: rgba(47, 128, 237, 0.25);
+}
+
+.hint {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+/* 価格編集 */
+.priceEditor {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.priceInput {
+  margin-bottom: 0;
+  text-align: right;
+  font-weight: 900;
+}
+
+.priceBtn {
+  border: 1px solid rgba(0,0,0,0.14);
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px 8px;
+  font-weight: 900;
+  cursor: pointer;
+  min-width: 56px;
+}
+
+/* 残数管理 */
+.stockMode {
+  display: flex;
+  gap: 8px;
+}
+
+.stockModeBtn {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.14);
+  background: #fff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.stockModeBtn.active {
+  background: rgba(0,0,0,0.10);
 }
