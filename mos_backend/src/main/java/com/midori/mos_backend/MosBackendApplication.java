@@ -9,5 +9,5 @@ public class MosBackendApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(MosBackendApplication.class, args);
 	}
-
+	
 }
