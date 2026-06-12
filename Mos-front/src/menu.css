@@ -19,10 +19,153 @@
   box-sizing: border-box;
 }
 
-.menu-header-title {
+.menu-header-back {
   font-size: 14px;
-  color: #777;
+  color: #333;
   margin-bottom: 18px;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
+  padding: 6px 14px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.menu-header-back:hover {
+  transform: translateY(-1px);
+}
+
+.menu-header-back:active {
+  transform: translateY(0);
+  opacity: 0.9;
+}
+
+.menu-header-title {
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 14px;
+}
+
+/* =========================
+   コース選択
+========================= */
+
+.course-screen {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(20px, 4vw, 40px);
+  box-sizing: border-box;
+}
+
+.course-card {
+  width: min(560px, 92vw);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  padding: 28px 24px 24px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  text-align: center;
+}
+
+.course-title {
+  margin: 0 0 8px;
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  color: #111;
+}
+
+.course-subtitle {
+  margin: 0 0 20px;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.course-options {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.course-actions {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.course-option {
+  border: 1px solid #aaa;
+  border-radius: 12px;
+  background: #f7f7f7;
+  padding: 12px 14px;
+  cursor: pointer;
+  text-align: left;
+  display: grid;
+  gap: 4px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.course-option.is-selected {
+  border-color: #444;
+  background: #e9e9e9;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+}
+
+.course-option:hover {
+  transform: translateY(-1px);
+}
+
+.course-action {
+  border: 1px solid #777;
+  border-radius: 12px;
+  background: #f3f3f3;
+  padding: 12px 14px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.course-action.is-secondary {
+  background: #e5e5e5;
+  border-color: #666;
+}
+
+.course-action:hover {
+  transform: translateY(-1px);
+}
+
+.course-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111;
+}
+
+.course-desc {
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.course-confirm {
+  width: min(100%, 240px);
+  border: none;
+  border-radius: 12px;
+  padding: 10px 16px;
+  background: #4c7a4c;
+  color: #fff;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.course-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.course-confirm:hover:not(:disabled) {
+  transform: translateY(-1px);
 }
 
 .menu-header-content {
@@ -32,11 +175,74 @@
   gap: 12px;
 }
 
+.stay-warning-banner {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: #fff3d6;
+  color: #7a2c00;
+  border: 1px solid #e0b48a;
+  border-radius: 10px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.stay-expired-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+}
+
+.stay-expired-card {
+  width: min(92vw, 520px);
+  min-height: min(70vh, 520px);
+  background: #fff;
+  border-radius: 16px;
+  padding: 26px 20px;
+  text-align: center;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.stay-expired-card p {
+  margin: 0;
+  font-size: 16px;
+  color: #111;
+}
+
+.stay-expired-action {
+  min-width: 120px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: none;
+  background: #e10600;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.stay-expired-action:hover {
+  transform: translateY(-1px);
+}
+
+.stay-expired-action:active {
+  transform: translateY(0);
+  opacity: 0.9;
+}
+
 .remaining-time {
   min-width: 76px;
   font-size: 12px;
   color: #222;
   line-height: 1.25;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .remaining-time span,
@@ -48,6 +254,7 @@
   font-size: 13px;
   font-weight: 400;
 }
+
 
 .menu-header-buttons {
   display: flex;
@@ -140,22 +347,63 @@
 
 .menu-card {
   min-height: 120px;
-  background: #d7d7d7;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+  background: #fff7ef;
+  border-radius: 18px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
   overflow: hidden;
   position: relative;
+  border: 2px solid rgba(167, 53, 18, 0.3);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.menu-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+}
+
+.menu-card-free {
+  background: #f5f1e6;
+  border-color: rgba(120, 90, 50, 0.45);
+}
+
+.menu-card-yakitori {
+  background: #fff2ee;
+  border-color: rgba(167, 53, 18, 0.7);
+}
+
+.menu-card-rice {
+  background: #fffbf2;
+  border-color: rgba(118, 88, 45, 0.7);
+}
+
+.menu-card-speed {
+  background: #f5fff7;
+  border-color: rgba(24, 104, 67, 0.7);
+}
+
+.menu-card-drink {
+  background: #f2f7ff;
+  border-color: rgba(65, 86, 134, 0.7);
+}
+
+.menu-card-dessert {
+  background: #fff8ef;
+  border-color: rgba(159, 99, 40, 0.7);
 }
 
 .menu-image-area {
-  height: 56px;
-  background: #fff;
+  height: 110px;
+  background: #fff8f0;
   position: relative;
+  overflow: hidden;
+  padding: 0;
 }
 
 .menu-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .menu-image-placeholder {
@@ -198,6 +446,13 @@
   font-size: 12px;
   color: #111;
   text-align: right;
+}
+
+.drink-excluded-label {
+  margin: 0 0 4px;
+  font-size: 11px;
+  color: #b12a20;
+  font-weight: 600;
 }
 
 .cart-button {
@@ -445,6 +700,47 @@
   gap: 12px;
   width: 100%;
   flex: 1;
+  border-top: 4px solid transparent;
+}
+
+.product-detail-screen.product-detail-free .product-detail-info {
+  background: #f6f0e8;
+  border-top-color: rgba(120, 90, 50, 0.7);
+}
+
+.product-detail-screen.product-detail-yakitori .product-detail-info {
+  background: #fff2ee;
+  border-top-color: rgba(167, 53, 18, 0.85);
+}
+
+.product-detail-screen.product-detail-rice .product-detail-info {
+  background: #fffbf2;
+  border-top-color: rgba(118, 88, 45, 0.85);
+}
+
+.product-detail-screen.product-detail-speed .product-detail-info {
+  background: #f5fff7;
+  border-top-color: rgba(24, 104, 67, 0.85);
+}
+
+.product-detail-screen.product-detail-drink .product-detail-info {
+  background: #f2f7ff;
+  border-top-color: rgba(65, 86, 134, 0.85);
+}
+
+.product-detail-screen.product-detail-dessert .product-detail-info {
+  background: #fff8ef;
+  border-top-color: rgba(159, 99, 40, 0.85);
+}
+
+.product-detail-screen.product-detail-yakitori .product-detail-header,
+.product-detail-screen.product-detail-rice .product-detail-header,
+.product-detail-screen.product-detail-speed .product-detail-header,
+.product-detail-screen.product-detail-drink .product-detail-header,
+.product-detail-screen.product-detail-dessert .product-detail-header,
+.product-detail-screen.product-detail-free .product-detail-header {
+  background: rgba(255, 255, 255, 0.92);
+  color: #2a1f16;
 }
 
 .product-detail-row {
@@ -578,6 +874,12 @@
   opacity: 0.9;
 }
 
+.footer-button.is-disabled,
+.footer-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* =========================
    注文保留画面
 ========================= */
@@ -591,9 +893,12 @@
 }
 
 .order-confirm-card {
-  background: #fff;
-  border: 2px solid #111;
+  background: #fffdf7;
+  border: 2px solid rgba(167, 53, 18, 0.55);
   padding: 0;
+  border-radius: 22px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+  overflow: hidden;
 }
 
 .order-table {
@@ -611,18 +916,40 @@
 }
 
 .order-col-name {
-  width: 55%;
+  width: 40%;
   text-align: left;
 }
 
+.order-col-thumb {
+  width: 16%;
+  text-align: center;
+}
+
 .order-col-action {
-  width: 25%;
+  width: 24%;
   text-align: center;
 }
 
 .order-col-qty {
   width: 20%;
   text-align: center;
+}
+
+.order-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+}
+
+.order-thumb-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: #f2f2f2;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  margin: 0 auto;
 }
 
 .order-action-cell {
@@ -675,6 +1002,12 @@
   border: 1px solid #999;
 }
 
+.order-confirm-send.is-disabled,
+.order-confirm-send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 @media (max-width: 640px) {
   .order-confirm-screen {
     padding: 10px;
@@ -718,37 +1051,88 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
+.calling-button {
+  margin-top: 18px;
+  min-width: 90px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #666;
+  background: #f5f5f5;
+  color: #111;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .category-grid {
   width: 100%;
   max-width: 520px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
 }
 
 .category-card {
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  background: #fff7ef;
+  border-radius: 22px 12px 22px 12px;
+  border: 2px solid rgba(167, 53, 18, 0.3);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
   text-decoration: none;
-  color: #111;
+  color: #221b12;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px;
+  padding: 14px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.category-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+}
+
+.category-card-free {
+  border-color: rgba(120, 90, 50, 0.45);
+}
+
+.category-card-yakitori {
+  border-color: rgba(167, 53, 18, 0.7);
+  background: #fff2ed;
+}
+
+.category-card-rice {
+  border-color: rgba(118, 88, 45, 0.7);
+  background: #fffbf3;
+}
+
+.category-card-speed {
+  border-color: rgba(24, 104, 67, 0.7);
+  background: #f7fff7;
+}
+
+.category-card-drink {
+  border-color: rgba(65, 86, 134, 0.7);
+  background: #f3f7ff;
+}
+
+.category-card-dessert {
+  border-color: rgba(159, 99, 40, 0.7);
+  background: #fff7ea;
 }
 
 .category-card.is-current {
-  background: #e1e1e1;
-  border: 2px solid #777;
+  background: #f2e4d8;
+  border-color: #80512f;
 }
 
 .category-image-area {
   width: 100%;
   height: 90px;
-  background: #fff;
+  background: #fff8f0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -788,4 +1172,12 @@
   font-size: 14px;
   color: #333;
   text-align: center;
+}
+
+/* 詳細画像用を定義 */
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #f3f3f3;
 }

@@ -1,27 +1,44 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MenuLayout } from '../components/MenuLayout'
+import { CartContext } from '../CartContext'
 import '../menu.css'
+import freeImage from '../assets/無料備品.jpg'
+import yakitoriImage from '../assets/焼き鳥.jpeg'
+import speedImage from '../assets/スピード.jpg'
+import riceImage from '../assets/ご飯もの.jpg'
+import drinkImage from '../assets/ドリンク.jpg'
+import dessertImage from '../assets/デザート.jpg'
 
 const categories = [
-  { id: 'free', label: '無料備品', image: '' },
-  { id: 'yakitori', label: '焼き鳥', image: '' },
-  { id: 'rice', label: 'ごはんもの', image: '' },
-  { id: 'speed', label: 'スピード', image: '' },
-  { id: 'drink', label: 'ドリンク', image: '' },
-  { id: 'dessert', label: 'デザート', image: '' }
+  { id: 'free', label: '無料備品', image: freeImage },
+  { id: 'yakitori', label: '焼き鳥', image: yakitoriImage },
+  { id: 'rice', label: 'ごはんもの', image: riceImage },
+  { id: 'speed', label: 'スピード', image: speedImage },
+  { id: 'drink', label: 'ドリンク', image: drinkImage },
+  { id: 'dessert', label: 'デザート', image: dessertImage }
 ]
 
 export default function CategoryMenu() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const navigate = useNavigate()
+  const { cartItems, resetCart, resetOrderHistory } = useContext(CartContext)
 
   const handleCheckout = () => {
-    setIsConfirmOpen(true)
+    if (cartItems.length > 0) {
+      setIsConfirmOpen(true)
+      return
+    }
+
+    resetCart()
+    resetOrderHistory()
+    navigate('/checkout')
   }
 
   const handleConfirm = () => {
     setIsConfirmOpen(false)
+    resetCart()
+    resetOrderHistory()
     navigate('/checkout')
   }
 
@@ -32,7 +49,7 @@ export default function CategoryMenu() {
           <Link
             key={category.id}
             to={`/menu/c/${category.id}`}
-            className="category-card"
+            className={`category-card category-card-${category.id}`}
           >
             <div className="category-image-area">
               {category.image ? (
@@ -50,9 +67,9 @@ export default function CategoryMenu() {
         <div className="modal-overlay">
           <div className="modal-card">
             <p>
-              お支払いを確定しますか?
+              注文保留に未確定の商品があります。
               <br />
-              確定後は追加注文することができません
+              注文をせずに会計しますか？
             </p>
             <div className="modal-actions">
               <button type="button" className="modal-button" onClick={handleConfirm}>

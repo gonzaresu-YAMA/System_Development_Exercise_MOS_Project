@@ -14,7 +14,7 @@ export default function Home() {
       </div>
 
       <div className="button-row">
-        <Link to="/menu" className="nav-button customer-button">
+        <Link to="/course" className="nav-button customer-button">
           お客様用画面へ移行
         </Link>
       </div>

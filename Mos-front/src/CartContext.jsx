@@ -1,5 +1,6 @@
 import { createContext, useEffect, useState } from 'react'
 import { orderHistoryRepository } from './services/orderHistoryRepository'
+import { isStayExpired } from './utils/stayTimer'
 
 let cartIdCounter = 0
 
@@ -50,6 +51,7 @@ export function CartProvider({ children }) {
   }, [orderHistory, hasLoadedHistory])
 
   const addToCart = (item) => {
+    if (isStayExpired()) return
     setCartItems(prev => [...prev, { ...item, cartId: generateCartId() }])
   }
 
@@ -61,7 +63,12 @@ export function CartProvider({ children }) {
     setCartItems([])
   }
 
+  const resetOrderHistory = () => {
+    setOrderHistory([])
+  }
+
   const confirmOrder = () => {
+    if (isStayExpired()) return false
     if (cartItems.length === 0) return false
     const order = {
       id: Date.now(),
@@ -81,6 +88,7 @@ export function CartProvider({ children }) {
         addToCart,
         removeFromCart,
         resetCart,
+        resetOrderHistory,
         orderHistory,
         confirmOrder
       }}

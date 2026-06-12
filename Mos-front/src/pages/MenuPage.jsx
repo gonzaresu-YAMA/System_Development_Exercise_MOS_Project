@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import { MenuLayout } from '../components/MenuLayout'
 import menuItems from '../data/menuItems'
+import useStayRemaining from '../hooks/useStayRemaining'
 import '../menu.css'
 
 const categoryLabels = {
@@ -15,6 +16,9 @@ const categoryLabels = {
 export default function MenuPage() {
   const navigate = useNavigate()
   const { category } = useParams()
+  const selectedCourse = sessionStorage.getItem('selectedCourse') || ''
+  const isDrinkPlan = selectedCourse.startsWith('drink')
+  const { isExpired } = useStayRemaining()
 
   const filtered = menuItems.filter((item) => item.category === category)
   const title = categoryLabels[category] || 'メニュー'
@@ -31,10 +35,15 @@ export default function MenuPage() {
         <div className="menu-empty">このカテゴリの商品はまだありません。</div>
       ) : (
         <div className="menu-grid">
-          {filtered.map((item) => (
+          {filtered.map((item) => {
+            const isDrinkItem = item.category === 'drink'
+            const isDrinkExcluded = Boolean(item.drinkPlanExcluded)
+            const shouldHidePrice = isDrinkPlan && isDrinkItem && !isDrinkExcluded
+
+            return (
             <div
               key={item.id}
-              className={`menu-card ${item.soldOut ? 'is-sold-out' : ''}`}
+              className={`menu-card menu-card-${item.category} ${item.soldOut ? 'is-sold-out' : ''}`}
             >
               <div className="menu-image-area">
                 {item.image ? (
@@ -47,19 +56,24 @@ export default function MenuPage() {
 
               <div className="menu-card-body">
                 <p className="menu-item-name">{item.name}</p>
-                <p className="menu-item-price">{item.price}￥</p>
+                {isDrinkItem && isDrinkExcluded && (
+                  <p className="drink-excluded-label">飲み放題対象外</p>
+                )}
+                <p className="menu-item-price">
+                  {shouldHidePrice ? '' : `${item.price}￥`}
+                </p>
 
                 <button
                   type="button"
                   className="cart-button"
-                  disabled={item.soldOut}
+                  disabled={item.soldOut || isExpired}
                   onClick={() => handleShowDetail(item)}
                 >
                   カートに入れる
                 </button>
               </div>
             </div>
-          ))}
+          )})}
         </div>
       )}
     </MenuLayout>

@@ -7,7 +7,7 @@ export default function StaffPage() {
       <h2>スタッフ用画面</h2>
       <p>スタッフ専用の管理機能へアクセスします。</p>
 
-      <Link to="/" className="nav-button back-button">
+      <Link to="/home" className="nav-button back-button">
         トップへ戻る
       </Link>
     </div>

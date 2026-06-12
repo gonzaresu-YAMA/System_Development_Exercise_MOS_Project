@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MenuLayout } from '../components/MenuLayout'
 import { CartContext } from '../CartContext'
+import useStayRemaining from '../hooks/useStayRemaining'
 import '../menu.css'
 
 export default function OrderSendPage() {
@@ -10,6 +11,7 @@ export default function OrderSendPage() {
   const [isSent, setIsSent] = useState(false)
   const [warningType, setWarningType] = useState(null)
   const [pendingConfirm, setPendingConfirm] = useState(false)
+  const { isExpired } = useStayRemaining()
 
   useEffect(() => {
     if (cartItems.length === 0 && !isSent) {
@@ -57,6 +59,11 @@ export default function OrderSendPage() {
   }
 
   const handleConfirm = () => {
+    if (isExpired) {
+      navigate('/menu')
+      return
+    }
+
     if (cartItems.length === 0) {
       navigate('/menu')
       return
@@ -104,7 +111,7 @@ export default function OrderSendPage() {
                 type="button"
                 className="modal-button"
                 onClick={handleConfirm}
-                disabled={cartItems.length === 0}
+                disabled={cartItems.length === 0 || isExpired}
               >
                 はい
               </button>
