@@ -31,13 +31,17 @@
 		<java.version>21</java.version>
 	</properties>
 	<dependencies>
-			<dependency>
-    		<groupId>com.h2database</groupId>
-    		<artifactId>h2</artifactId>
-    		<!-- <scope>test</scope> -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<!-- <scope>test</scope> -->
 			<!-- ↑アプリ実行時クラスパスにドライバが入らず起動に失敗するため、
-				　実行の際はruntimeに変更する -->
-			</dependency>
+				実行の際はruntimeに変更する -->
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-restclient</artifactId>
