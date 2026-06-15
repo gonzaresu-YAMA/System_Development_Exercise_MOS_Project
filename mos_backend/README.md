@@ -14,4 +14,7 @@
 
 ## ToDo
 
-後にissueに追加していく
+後にissueに追加していく  
+
+1.H2データベースをMariaDBに変更  
+2.pom.xmlのpackagingをTomcat実装後、warに変更  
