@@ -1,0 +1,43 @@
+.usecasePage {
+  padding: 10px 0;
+}
+
+.usecaseTitle {
+  margin: 0 0 12px;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.usecaseGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.usecaseCard {
+  text-align: left;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  background: #fff;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+}
+
+.usecaseBig {
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.usecaseSub {
+  margin-top: 4px;
+  opacity: 0.7;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+@media (min-width: 720px) {
+  .usecaseGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

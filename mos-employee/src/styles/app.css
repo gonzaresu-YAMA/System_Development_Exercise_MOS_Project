@@ -1,0 +1,238 @@
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.blackBanner {
+  background: #111;
+  color: #fff;
+  padding: 18px 20px;
+}
+
+.blackBanner h1 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 0.04em;
+}
+
+.loginCard {
+  width: min(360px, calc(100% - 32px));
+  margin: 64px auto;
+  padding: 22px;
+  background: var(--card);
+  border-radius: 14px;
+  box-shadow: var(--shadow-medium);
+  border: 1px solid var(--line);
+  display: grid;
+  gap: 12px;
+}
+
+.loginTitle {
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.inputGroup input,
+.select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 10px;
+  font-size: 16px;
+  background: #fff;
+}
+
+.primaryBtn {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 800;
+  background: #ffd54a;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.05s;
+}
+
+.primaryBtn:hover {
+  opacity: 0.92;
+}
+
+.primaryBtn:active {
+  transform: translateY(1px);
+}
+
+.primaryBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.helpText {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.errorBanner {
+  padding: 10px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 59, 48, 0.12);
+  border: 1px solid rgba(255, 59, 48, 0.20);
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.shellPage {
+  min-height: 100vh;
+  padding: 16px;
+}
+
+.shellContent {
+  display: block;
+}
+
+.shellHeader {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin: -16px -16px 16px;
+  padding: 10px 12px;
+  background: #f2f2f2;
+  border-bottom: 1px solid var(--line);
+}
+
+.shellHeaderRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.shellHeaderLeft {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.shellHeaderCenter {
+  text-align: center;
+}
+
+.shellHeaderRight {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.shellHeaderGap {
+  width: 88px;
+}
+
+.shellShopName {
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.shellScreenName {
+  margin-top: 4px;
+  font-size: 13px;
+  opacity: 0.75;
+  font-weight: 700;
+}
+
+.shellUserLine {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.pageSection {
+  padding: 10px 0;
+}
+
+.sectionTitle {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.sectionText {
+  margin: 0;
+  opacity: 0.8;
+}
+
+.appBtn {
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--text);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.appBtnGhost {
+  background: #fff;
+}
+
+.appBtnPrimary {
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border-color: transparent;
+}
+
+.appBtnWarn {
+  background: var(--warning-bg);
+  border-color: var(--warning-line);
+  color: var(--warning-contrast);
+}
+
+.appCard {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-soft);
+}
+
+.appOverlay {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay);
+  z-index: 5000;
+}
+
+.appModal {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(420px, calc(100% - 24px));
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-strong);
+  padding: 14px;
+  z-index: 6000;
+}
+
+.appModalTitle {
+  font-size: 18px;
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+.appModalText {
+  margin: 0;
+  opacity: 0.85;
+  line-height: 1.5;
+}
+
+.appModalActions {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.appModalActions.twoCols {
+  grid-template-columns: 1fr 1fr;
+}
