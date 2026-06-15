@@ -1,0 +1,294 @@
+.orders {
+  padding: 8px 0;
+}
+
+.ordersHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ordersHeaderLeft {
+  display: grid;
+  gap: 4px;
+}
+
+.ordersTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.ordersMeta {
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.urgentCount {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ff3b30;
+}
+
+.urgentCount strong {
+  font-size: 20px;
+  margin: 0 2px;
+}
+
+.ordersTools {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.ordersFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filterBtn {
+  padding: 10px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.14);
+  background: #fff;
+  font-weight: 900;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.filterBtn.active {
+  background: rgba(0,0,0,0.10);
+}
+
+.ordersSearch {
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.14);
+  background: #fff;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.ordersList {
+  display: grid;
+  gap: 12px;
+}
+
+.orderCard {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 10px 18px rgba(0,0,0,0.06);
+  position: relative;
+}
+
+.orderCard::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 8px;
+  border-radius: 999px;
+  background: #bbb;
+}
+
+.orderCard.status-未確認::before { background: #ff3b30; }
+.orderCard.status-調理中::before { background: #ff9f0a; }
+.orderCard.status-提供待ち::before { background: #0a84ff; }
+.orderCard.status-完了::before { background: #34c759; }
+
+.orderTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-left: 10px;
+}
+
+.orderMain {
+  display: grid;
+  gap: 4px;
+}
+
+.orderTable {
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.orderTime {
+  font-size: 14px;
+  opacity: 0.72;
+}
+
+.statusBadge {
+  font-size: 14px;
+  font-weight: 900;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.10);
+  background: #f2f2f2;
+  white-space: nowrap;
+}
+
+.statusBadge.status-未確認 { background: rgba(255,59,48,0.12); }
+.statusBadge.status-調理中 { background: rgba(255,159,10,0.14); }
+.statusBadge.status-提供待ち { background: rgba(10,132,255,0.14); }
+.statusBadge.status-完了 { background: rgba(52,199,89,0.14); }
+
+.itemList {
+  margin: 12px 0 0;
+  padding-left: 10px;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.itemRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.04);
+}
+
+.itemRow.done {
+  opacity: 0.65;
+}
+
+.itemLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cookCheck {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.18);
+  background: #fff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.cookCheck.checked {
+  background: #34c759;
+  color: #fff;
+  border-color: #34c759;
+}
+
+.cookCheck:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.itemName {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.itemQty {
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.orderActions {
+  margin-top: 12px;
+  padding-left: 10px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.primaryBtn2 {
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: none;
+  background: #2f80ed;
+  color: #fff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.primaryBtn2:hover {
+  opacity: 0.92;
+}
+
+.waitingBtn {
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.14);
+  background: #fff7e6;
+  color: #8a5b00;
+  font-weight: 900;
+  cursor: not-allowed;
+}
+
+.doneBtn {
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.14);
+  background: #f0f0f0;
+  color: #666;
+  font-weight: 900;
+  cursor: not-allowed;
+}
+
+.pager {
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  align-items: center;
+}
+
+.pagerBtn {
+  width: 44px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.14);
+  background: #fff;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.pagerBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagerNums {
+  display: flex;
+  gap: 8px;
+}
+
+.pagerNum {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.14);
+  background: #fff;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.pagerNum.active {
+  background: rgba(0,0,0,0.12);
+}
+
+.emptyState {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 16px;
+  padding: 14px;
+  opacity: 0.75;
+}

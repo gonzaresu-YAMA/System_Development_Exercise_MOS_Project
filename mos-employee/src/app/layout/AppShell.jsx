@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { clearUser, clearUseCase, getUseCase, getUser, setUseCase } from '../auth/auth'
 import { normalizeAllowedUseCases } from '../../domain/staff/staffDb'
 import { ROLE_LABEL } from '../../domain/staff/staffMapper'
 import { useNavStack } from '../../hooks/useNavStack'
+import { useSessionUser } from '../auth/useSessionUser'
 
 import UseCaseSelect from '../../features/auth/UseCaseSelect'
 import AdminHub from '../../features/admin/AdminHub'
@@ -13,12 +13,33 @@ import MenuManagement from '../../features/menu/MenuManagement'
 import StaffManagement from '../../features/staff/StaffManagement'
 import '../../styles/app.css'
 
+function getHeaderTitle(useCase) {
+  if (!useCase) return '用途選択'
+  if (useCase === 'hall') return 'ホール（座席管理）'
+  if (useCase === 'kitchen') return '厨房（注文管理）'
+  return '業務（店舗管理）'
+}
+
+function getInitialScreen(useCase) {
+  if (useCase === 'hall') return 'seats'
+  if (useCase === 'kitchen') return 'orders'
+  if (useCase === 'admin') return 'adminHub'
+  return 'usecase'
+}
+
 export default function AppShell() {
   const navigate = useNavigate()
-  const user = getUser()
+  const session = useSessionUser()
+  const user = session.getUser()
+  const storedUseCase = session.getUseCase()
+
+  const [useCaseState, setUseCaseState] = useState(storedUseCase)
+  const [logoutOpen, setLogoutOpen] = useState(false)
 
   useEffect(() => {
-    if (!user) navigate('/', { replace: true })
+    if (!user) {
+      navigate('/', { replace: true })
+    }
   }, [user, navigate])
 
   const allowedUseCases = useMemo(() => {
@@ -26,33 +47,23 @@ export default function AppShell() {
     return normalizeAllowedUseCases(user.role, user.allowedUseCases)
   }, [user])
 
-  const [useCaseState, setUseCaseState] = useState(() => getUseCase())
-
   useEffect(() => {
     if (!user) return
     if (useCaseState) return
     if (allowedUseCases.length === 1) {
       const only = allowedUseCases[0]
-      setUseCase(only)
+      session.setUseCase(only)
       setUseCaseState(only)
     }
-  }, [user, useCaseState, allowedUseCases])
+  }, [user, useCaseState, allowedUseCases, session])
 
-  const initialScreen = useMemo(() => {
-    if (useCaseState === 'hall') return 'seats'
-    if (useCaseState === 'kitchen') return 'orders'
-    if (useCaseState === 'admin') return 'adminHub'
-    return 'usecase'
-  }, [useCaseState])
-
+  const initialScreen = useMemo(() => getInitialScreen(useCaseState), [useCaseState])
   const nav = useNavStack(initialScreen)
 
   useEffect(() => {
     nav.reset(initialScreen)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialScreen])
-
-  const [logoutOpen, setLogoutOpen] = useState(false)
 
   useEffect(() => {
     if (!logoutOpen) return
@@ -65,27 +76,30 @@ export default function AppShell() {
 
   if (!user) return null
 
+  const screen = nav.current
+  const headerTitle = getHeaderTitle(useCaseState)
+
   const requestLogout = () => setLogoutOpen(true)
   const cancelLogout = () => setLogoutOpen(false)
   const confirmLogout = () => {
     setLogoutOpen(false)
-    clearUser()
+    session.clearUser()
     navigate('/', { replace: true })
   }
 
   const changeUseCase = () => {
-    clearUseCase()
+    session.clearUseCase()
     setUseCaseState(null)
     nav.reset('usecase')
   }
 
-  const selectUseCase = (uc) => {
-    setUseCase(uc)
-    setUseCaseState(uc)
+  const selectUseCase = (next) => {
+    session.setUseCase(next)
+    setUseCaseState(next)
   }
 
   let body = null
-  let showBack = false
+  let showBackButton = false
 
   if (!useCaseState) {
     body = <UseCaseSelect allowed={allowedUseCases} onSelect={selectUseCase} />
@@ -94,8 +108,6 @@ export default function AppShell() {
   } else if (useCaseState === 'kitchen') {
     body = <Orders />
   } else if (useCaseState === 'admin') {
-    const screen = nav.current
-
     if (screen === 'adminHub') {
       body = (
         <AdminHub
@@ -108,58 +120,49 @@ export default function AppShell() {
       )
     } else if (screen === 'menu') {
       body = <MenuManagement onBack={() => nav.back()} />
-      showBack = true
+      showBackButton = true
     } else if (screen === 'staff') {
       if (user.role !== 'manager') {
         body = (
-          <section className="page">
-            <h2>権限がありません</h2>
-            <p>従業員管理は店長のみ利用できます。</p>
+          <section className="pageSection">
+            <h2 className="sectionTitle">権限がありません</h2>
+            <p className="sectionText">従業員管理は店長のみ利用できます。</p>
           </section>
         )
-        showBack = true
       } else {
         body = <StaffManagement onBack={() => nav.back()} />
-        showBack = true
       }
+      showBackButton = true
     } else {
       body = <MenuManagement onBack={() => nav.back()} />
-      showBack = true
+      showBackButton = true
     }
   }
-
-  const headerTitle =
-    !useCaseState
-      ? '用途選択'
-      : useCaseState === 'hall'
-      ? 'ホール（座席管理）'
-      : useCaseState === 'kitchen'
-      ? '厨房（注文管理）'
-      : '業務（店舗管理）'
 
   return (
     <div className="shellPage">
       <ShellHeader
         title={headerTitle}
         userLabel={`${ROLE_LABEL[user.role]}：${user.name}`}
-        onLogout={requestLogout}
+        showBackButton={showBackButton && nav.canBack}
+        onBack={nav.back}
         onChangeUseCase={useCaseState ? changeUseCase : null}
-        onBack={showBack && nav.canBack ? nav.back : null}
+        onLogout={requestLogout}
       />
 
-      {body}
+      <main className="shellContent">{body}</main>
 
       {logoutOpen && (
         <>
-          <div className="overlay" onClick={cancelLogout} />
-          <div className="modal" role="dialog" aria-modal="true">
-            <div className="modalTitle">ログアウトしますか？</div>
-            <p className="confirmText">現在の作業画面からログアウトします。</p>
-            <div className="modalActions">
-              <button className="btn ghost" type="button" onClick={cancelLogout}>
+          <div className="appOverlay" onClick={cancelLogout} />
+          <div className="appModal" role="dialog" aria-modal="true">
+            <div className="appModalTitle">ログアウトしますか？</div>
+            <p className="appModalText">現在の作業画面からログアウトします。</p>
+            <div className="appModalActions twoCols">
+              <button className="appBtn appBtnGhost" type="button" onClick={cancelLogout}>
                 キャンセル
               </button>
-              <button className="btn warn" type="button" onClick={confirmLogout}>
+              <button className="appBtn appBtnWarn" type="button" onClick={confirmLogout}>
                 ログアウト
               </button>
             </div>
@@ -170,37 +173,44 @@ export default function AppShell() {
   )
 }
 
-function ShellHeader({ title, userLabel, onLogout, onChangeUseCase, onBack }) {
+function ShellHeader({
+  title,
+  userLabel,
+  showBackButton,
+  onBack,
+  onChangeUseCase,
+  onLogout,
+}) {
   return (
     <header className="shellHeader">
       <div className="shellHeaderRow">
         <div className="shellHeaderLeft">
-          {onBack ? (
-            <button className="btn ghost" type="button" onClick={onBack}>
+          {showBackButton ? (
+            <button className="appBtn appBtnGhost" type="button" onClick={onBack}>
               ← 戻る
             </button>
           ) : (
-            <div style={{ width: 88 }} />
+            <div className="shellHeaderGap" />
           )}
         </div>
 
         <div className="shellHeaderCenter">
-          <div className="shellShop">居酒屋みどり亭</div>
-          <div className="shellTitle">{title}</div>
+          <div className="shellShopName">居酒屋みどり亭</div>
+          <div className="shellScreenName">{title}</div>
         </div>
 
         <div className="shellHeaderRight">
           {onChangeUseCase && (
-            <button className="btn ghost" type="button" onClick={onChangeUseCase}>
+            <button className="appBtn appBtnGhost" type="button" onClick={onChangeUseCase}>
               用途変更
             </button>
           )}
-          <button className="btn warn" type="button" onClick={onLogout}>
+          <button className="appBtn appBtnWarn" type="button" onClick={onLogout}>
             ログアウト
           </button>
         </div>
       </div>
-      <div className="shellUser">{userLabel}</div>
+      <div className="shellUserLine">{userLabel}</div>
     </header>
   )
 }

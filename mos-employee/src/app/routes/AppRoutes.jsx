@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import LoginPage from '../../features/auth/LoginPage'
 import ProtectedRoute from './ProtectedRoute'
 import StaffLayout from '../layout/StaffLayout'
@@ -14,6 +14,8 @@ export default function AppRoutes() {
           <Route path="/employee" element={<AppShell />} />
         </Route>
       </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }

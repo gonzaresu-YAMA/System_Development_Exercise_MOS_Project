@@ -1,0 +1,365 @@
+import { useEffect, useMemo, useState } from 'react'
+import './Seats.css'
+
+import {
+  loadSeatStore,
+  saveSeatStore,
+  getSeatsByFloor,
+  updateSeatInStore,
+  SEAT_STATUS,
+  SEAT_STATUS_LIST,
+  SEAT_STATUS_LABEL,
+  SEAT_STATUS_COLOR,
+} from '../../domain/seats/seatDb'
+
+const FILTERS = [
+  { key: 'all', label: '全件' },
+  { key: SEAT_STATUS.empty, label: '空席' },
+  { key: SEAT_STATUS.using, label: '使用中' },
+  { key: SEAT_STATUS.paid, label: '会計済' },
+  { key: SEAT_STATUS.stop, label: '停止中' },
+]
+
+function Seats() {
+  const [seatStore, setSeatStore] = useState(() => loadSeatStore())
+  const [floor, setFloor] = useState(null)
+  const [statusFilter, setStatusFilter] = useState('all')
+
+  const [confirm, setConfirm] = useState(null)
+  const [draft, setDraft] = useState(null)
+  const [dropOpen, setDropOpen] = useState(false)
+  const [toast, setToast] = useState('')
+
+  useEffect(() => {
+    saveSeatStore(seatStore)
+  }, [seatStore])
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setConfirm(null)
+        setDraft(null)
+        setDropOpen(false)
+        setToast('')
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [])
+
+  useEffect(() => {
+    if (!toast) return
+    const timer = setTimeout(() => setToast(''), 2500)
+    return () => clearTimeout(timer)
+  }, [toast])
+
+  const seats = useMemo(() => {
+    if (!floor) return []
+    return getSeatsByFloor(seatStore, floor)
+  }, [seatStore, floor])
+
+  const filteredSeats = useMemo(() => {
+    if (statusFilter === 'all') return seats
+    return seats.filter((seat) => seat.status === statusFilter)
+  }, [seats, statusFilter])
+
+  const updateSeat = (nextSeat) => {
+    if (!floor) return
+    setSeatStore((prev) => updateSeatInStore(prev, floor, nextSeat))
+  }
+
+  const handleSeatTap = (seat) => {
+    if (seat.status === SEAT_STATUS.empty) {
+      setConfirm({ mode: 'start', seat })
+      return
+    }
+
+    if (seat.status === SEAT_STATUS.using) {
+      setConfirm({ mode: 'pay', seat })
+      return
+    }
+  }
+
+  const openEdit = (seat) => {
+    setDraft({ ...seat })
+    setDropOpen(false)
+    setConfirm(null)
+  }
+
+  const closeEdit = () => {
+    setDraft(null)
+    setDropOpen(false)
+  }
+
+  const applyEdit = () => {
+    if (!draft) return
+    updateSeat({
+      ...draft,
+      people: Math.max(0, Number(draft.people || 0)),
+    })
+    closeEdit()
+  }
+
+  const changeStatusInEdit = (nextStatus) => {
+    setDraft((prev) => (prev ? { ...prev, status: nextStatus } : prev))
+    setDropOpen(false)
+  }
+
+  const confirmOK = () => {
+    if (!confirm) return
+    const { mode, seat } = confirm
+
+    if (mode === 'start') {
+      updateSeat({ ...seat, status: SEAT_STATUS.using })
+      setToast(`${seat.id} のQRコードを発行しました`)
+    }
+
+    if (mode === 'pay') {
+      updateSeat({ ...seat, status: SEAT_STATUS.paid })
+    }
+
+    setConfirm(null)
+  }
+
+  const confirmCancel = () => setConfirm(null)
+
+  const bashingDone = (seat) => {
+    updateSeat({ ...seat, status: SEAT_STATUS.empty, people: 0 })
+  }
+
+  const reissueQR = (seat) => {
+    setToast(`${seat.id} のQRコードを再発行しました`)
+  }
+
+  const backToFloorSelect = () => {
+    setFloor(null)
+    setStatusFilter('all')
+    setConfirm(null)
+    setDraft(null)
+    setDropOpen(false)
+  }
+
+  if (floor == null) {
+    return (
+      <section className="seats">
+        <h2 className="seatsTitle">座席管理</h2>
+
+        <div className="floorSelect">
+          <button className="floorCard" onClick={() => setFloor(1)} type="button">
+            <div className="floorBig">1階</div>
+            <div className="floorSub">T101 〜</div>
+          </button>
+
+          <button className="floorCard" onClick={() => setFloor(2)} type="button">
+            <div className="floorBig">2階</div>
+            <div className="floorSub">T201 〜</div>
+          </button>
+        </div>
+      </section>
+    )
+  }
+
+  return (
+    <section className="seats">
+      <div className="seatsHeader">
+        <div className="seatsHeaderLeft">
+          <button className="floorBackBtn" onClick={backToFloorSelect} type="button">
+            ← 戻る
+          </button>
+          <h2 className="seatsTitle">座席管理</h2>
+        </div>
+
+        <div className="floorBadge">{floor === 1 ? '1階' : '2階'}</div>
+      </div>
+
+      <div className="seatTools">
+        <div className="seatFilters">
+          {FILTERS.map((f) => (
+            <button
+              key={f.key}
+              type="button"
+              className={`seatFilterBtn ${statusFilter === f.key ? 'active' : ''}`}
+              onClick={() => setStatusFilter(f.key)}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="seatCount">
+          表示 {filteredSeats.length} 件 / 全 {seats.length} 件
+        </div>
+      </div>
+
+      <div className="seatList">
+        {filteredSeats.map((seat) => (
+          <button
+            key={seat.id}
+            className="seatCard"
+            onClick={() => handleSeatTap(seat)}
+            type="button"
+          >
+            <div className={`seatStatus ${SEAT_STATUS_COLOR[seat.status]}`} />
+
+            <div className="seatMain">
+              <div className="seatId">{seat.id}</div>
+              <div className="seatMeta">
+                {SEAT_STATUS_LABEL[seat.status]} / {seat.people}名
+              </div>
+            </div>
+
+            <div className="seatRight">
+              <button
+                className="editBtn"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  openEdit(seat)
+                }}
+              >
+                編集
+              </button>
+
+              {seat.status === SEAT_STATUS.paid && (
+                <button
+                  className="bashBtn"
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    bashingDone(seat)
+                  }}
+                >
+                  バッシング完了
+                </button>
+              )}
+            </div>
+          </button>
+        ))}
+
+        {filteredSeats.length === 0 && <div className="seatEmpty">該当する座席がありません。</div>}
+      </div>
+
+      {confirm && (
+        <>
+          <div className="seatOverlay" onClick={confirmCancel} />
+          <div className="confirmModal" role="dialog" aria-modal="true">
+            <h3 className="confirmTitle">確認</h3>
+
+            {confirm.mode === 'start' && (
+              <p className="confirmText">
+                ほんとに <strong>{confirm.seat.id}</strong> であっていますか？
+                <br />
+                OKで「使用中」にします。
+              </p>
+            )}
+
+            {confirm.mode === 'pay' && (
+              <p className="confirmText">
+                <strong>{confirm.seat.id}</strong> を会計済みにしますか？
+              </p>
+            )}
+
+            <div className="confirmActions">
+              <button className="ghostBtn2" onClick={confirmCancel} type="button">
+                キャンセル
+              </button>
+
+              {confirm.mode === 'start' ? (
+                <button className="primaryBtn2" onClick={confirmOK} type="button">
+                  QRコードを発行する
+                </button>
+              ) : (
+                <button className="primaryBtn2" onClick={confirmOK} type="button">
+                  確認
+                </button>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+
+      {draft && (
+        <>
+          <div className="seatOverlay" onClick={closeEdit} />
+
+          <div className="seatModal" role="dialog" aria-modal="true">
+            <div className="modalTitle">座席管理</div>
+            <div className="seatIdBar">{draft.id}</div>
+
+            <div className="gridPeople">
+              <div className="cell peopleLabel">利用人数</div>
+              <div className="cell peopleValue">
+                <input
+                  className="peopleInput"
+                  type="number"
+                  min="0"
+                  max="30"
+                  value={draft.people}
+                  onChange={(e) =>
+                    setDraft((p) => (p ? { ...p, people: Number(e.target.value) } : p))
+                  }
+                />
+              </div>
+              <div className="cell peopleUnit">名</div>
+            </div>
+
+            <div className="statusBlock">
+              <button
+                className="arrowBtn"
+                onClick={() => setDropOpen((v) => !v)}
+                type="button"
+                aria-label="ステータスを開く"
+              >
+                {dropOpen ? '▲' : '▼'}
+              </button>
+
+              <div className={`colorBox ${SEAT_STATUS_COLOR[draft.status]}`} />
+
+              <div className="statusArea">
+                <div className="statusRow">
+                  <div className="statusText">{SEAT_STATUS_LABEL[draft.status]}</div>
+                </div>
+
+                {dropOpen && (
+                  <div className="statusMenu">
+                    {SEAT_STATUS_LIST.map((s) => (
+                      <button
+                        key={s.key}
+                        className="statusOption"
+                        onClick={() => changeStatusInEdit(s.key)}
+                        type="button"
+                      >
+                        <span className={`optColor ${s.color}`} />
+                        <span className="optText">{s.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="modalActions three">
+              <button
+                className="qrReissueBtn"
+                type="button"
+                onClick={() => reissueQR(draft)}
+              >
+                QRコードを再発行する
+              </button>
+              <button className="confirmBtn" onClick={applyEdit} type="button">
+                確定
+              </button>
+              <button className="backBtn" onClick={closeEdit} type="button">
+                戻る
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {toast && <div className="seatToast">{toast}</div>}
+    </section>
+  )
+}
+
+export default Seats
