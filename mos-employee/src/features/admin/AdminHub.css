@@ -1,0 +1,43 @@
+.adminHubPage {
+  padding: 10px 0;
+}
+
+.adminHubTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.adminHubSub {
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.adminHubGrid {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.adminHubCard {
+  text-align: left;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.10);
+  background: #fff;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+  cursor: pointer;
+}
+
+.adminHubBig {
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.adminHubMeta {
+  margin-top: 6px;
+  opacity: 0.76;
+  font-size: 13px;
+  font-weight: 800;
+}
