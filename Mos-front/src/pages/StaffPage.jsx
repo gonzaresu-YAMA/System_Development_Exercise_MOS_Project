@@ -3,13 +3,16 @@ import '../App.css'
 
 export default function StaffPage() {
   return (
-    <div className="page-content">
-      <h2>スタッフ用画面</h2>
-      <p>スタッフ専用の管理機能へアクセスします。</p>
-
-      <Link to="/home" className="nav-button back-button">
-        トップへ戻る
-      </Link>
+    <div className="staff-page-root">
+      <div className="staff-page-card">
+        <h2 className="staff-page-title">スタッフ用画面</h2>
+        <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: '24px', lineHeight: 1.7 }}>
+          スタッフ管理システムへはこちらからアクセスします。
+        </p>
+        <Link to="/" className="staff-page-link">
+          ← トップへ戻る
+        </Link>
+      </div>
     </div>
   )
 }

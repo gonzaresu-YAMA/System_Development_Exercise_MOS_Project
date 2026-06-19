@@ -2,6 +2,7 @@ import { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MenuLayout } from '../components/MenuLayout'
 import { CartContext } from '../CartContext'
+import '../App.css'
 import '../menu.css'
 import freeImage from '../assets/無料備品.jpg'
 import yakitoriImage from '../assets/焼き鳥.jpeg'
@@ -11,12 +12,12 @@ import drinkImage from '../assets/ドリンク.jpg'
 import dessertImage from '../assets/デザート.jpg'
 
 const categories = [
-  { id: 'free', label: '無料備品', image: freeImage },
-  { id: 'yakitori', label: '焼き鳥', image: yakitoriImage },
-  { id: 'rice', label: 'ごはんもの', image: riceImage },
-  { id: 'speed', label: 'スピード', image: speedImage },
-  { id: 'drink', label: 'ドリンク', image: drinkImage },
-  { id: 'dessert', label: 'デザート', image: dessertImage }
+  { id: 'free',     label: '無料備品',   image: freeImage },
+  { id: 'yakitori', label: '焼き鳥',     image: yakitoriImage },
+  { id: 'rice',     label: 'ごはんもの', image: riceImage },
+  { id: 'speed',    label: 'スピード',   image: speedImage },
+  { id: 'drink',    label: 'ドリンク',   image: drinkImage },
+  { id: 'dessert',  label: 'デザート',   image: dessertImage }
 ]
 
 export default function CategoryMenu() {
@@ -29,7 +30,6 @@ export default function CategoryMenu() {
       setIsConfirmOpen(true)
       return
     }
-
     resetCart()
     resetOrderHistory()
     navigate('/checkout')
@@ -44,12 +44,14 @@ export default function CategoryMenu() {
 
   return (
     <MenuLayout activeTab="categories" showCheckout onCheckoutClick={handleCheckout}>
+      <p className="category-section-title">メニューカテゴリ</p>
+
       <div className="category-grid">
         {categories.map((category) => (
           <Link
             key={category.id}
             to={`/menu/c/${category.id}`}
-            className={`category-card category-card-${category.id}`}
+            className="category-card"
           >
             <div className="category-image-area">
               {category.image ? (

@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { CartProvider } from './CartContext'
 import './App.css'
 import Home from './pages/Home'
 import CourseSelectPage from './pages/CourseSelectPage'
@@ -15,29 +16,25 @@ import ProductDetail from './pages/ProductDetail'
 
 function App() {
   return (
-    <BrowserRouter>
-      <div className="app-main">
-        <main className="home-section">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/home" element={<Navigate to="/" replace />} />
-            <Route path="/course" element={<CourseSelectPage />} />
-            <Route path="/about" element={<Navigate to="/menu" replace />} />
-            <Route path="/checkout" element={<CheckoutPage />} />
-            <Route path="/menu" element={<CategoryMenu />} />
-            <Route path="/menu/categories" element={<Navigate to="/menu" replace />} />
-            <Route path="/menu/item/:id" element={<ProductDetail />} />
-            <Route path="/menu/c/:category" element={<MenuPage />} />
-            <Route path="/history" element={<HistoryPage />} />
-            <Route path="/order-confirm" element={<OrderConfirmPage />} />
-            <Route path="/order-send" element={<OrderSendPage />} />
-            <Route path="/call-staff" element={<CallStaffPage />} />
-            <Route path="/call-staff-calling" element={<CallingStaffPage />} />
-            <Route path="/staff" element={<StaffPage />} />
-          </Routes>
-        </main>
-      </div>
-    </BrowserRouter>
+    <CartProvider>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Navigate to="/" replace />} />
+        <Route path="/course" element={<CourseSelectPage />} />
+        <Route path="/about" element={<Navigate to="/menu" replace />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/menu" element={<CategoryMenu />} />
+        <Route path="/menu/categories" element={<Navigate to="/menu" replace />} />
+        <Route path="/menu/item/:id" element={<ProductDetail />} />
+        <Route path="/menu/c/:category" element={<MenuPage />} />
+        <Route path="/history" element={<HistoryPage />} />
+        <Route path="/order-confirm" element={<OrderConfirmPage />} />
+        <Route path="/order-send" element={<OrderSendPage />} />
+        <Route path="/call-staff" element={<CallStaffPage />} />
+        <Route path="/call-staff-calling" element={<CallingStaffPage />} />
+        <Route path="/staff" element={<StaffPage />} />
+      </Routes>
+    </CartProvider>
   )
 }
 

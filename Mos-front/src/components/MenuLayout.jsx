@@ -2,6 +2,7 @@ import { useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { CartContext } from '../CartContext'
 import { getRemainingSeconds, getStayUntil } from '../utils/stayTimer'
+import '../App.css'
 import '../menu.css'
 
 export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick }) {
@@ -16,7 +17,6 @@ export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick 
       const minutes = Math.floor((remainingSeconds % 3600) / 60)
       return `${hours}時間${String(minutes).padStart(2, '0')}分`
     }
-
     const minutes = Math.floor(remainingSeconds / 60)
     const seconds = remainingSeconds % 60
     return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
@@ -24,30 +24,18 @@ export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick 
 
   useEffect(() => {
     const initialUntil = getStayUntil()
-
-    const updateRemaining = () => {
-      const diffSeconds = Math.max(0, Math.ceil((initialUntil - Date.now()) / 1000))
-      setRemainingSeconds(diffSeconds)
+    const update = () => {
+      setRemainingSeconds(Math.max(0, Math.ceil((initialUntil - Date.now()) / 1000)))
     }
-
-    updateRemaining()
-    const timerId = setInterval(updateRemaining, 1000)
-
-    return () => clearInterval(timerId)
+    update()
+    const id = setInterval(update, 1000)
+    return () => clearInterval(id)
   }, [])
 
   const handleBack = () => {
-    if (window.history.length > 1) {
-      navigate(-1)
-    } else {
-      navigate('/menu')
-    }
+    if (window.history.length > 1) navigate(-1)
+    else navigate('/menu')
   }
-
-  const showBackButton = location.pathname !== '/menu'
-  const isExpired = remainingSeconds <= 0
-  const warningThresholdSeconds = 10 * 60
-  const isExpiringSoon = remainingSeconds > 0 && remainingSeconds <= warningThresholdSeconds
 
   const handleExpiredCheckout = () => {
     resetCart()
@@ -55,24 +43,25 @@ export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick 
     navigate('/checkout')
   }
 
-  
+  const showBackButton = location.pathname !== '/menu'
+  const isExpired = remainingSeconds <= 0
+  const isExpiringSoon = remainingSeconds > 0 && remainingSeconds <= 10 * 60
+
   return (
     <div className="menu-screen">
       <header className="menu-header">
-        {showBackButton && (
-          <button
-            type="button"
-            className="menu-header-back"
-            onClick={handleBack}
-          >
-            戻る
-          </button>
-        )}
+        <div className="menu-header-top">
+          {showBackButton && (
+            <button type="button" className="menu-header-back" onClick={handleBack}>
+              ← 戻る
+            </button>
+          )}
+          <div className="menu-header-title">居酒屋みどり亭</div>
+        </div>
 
-        <div className="menu-header-title">居酒屋みどり亭</div>
         <div className="menu-header-content">
           <div className="remaining-time">
-            <span>滞在時間</span>
+            <span>滞在残り</span>
             <strong>{remainingLabel}</strong>
           </div>
 
@@ -96,11 +85,7 @@ export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick 
             </Link>
 
             {isExpired ? (
-              <button
-                type="button"
-                className="circle-button badge-parent is-disabled"
-                disabled
-              >
+              <button type="button" className="circle-button badge-parent is-disabled" disabled>
                 注文
                 <br />
                 保留
@@ -122,10 +107,9 @@ export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick 
 
         {isExpiringSoon && !isExpired && (
           <div className="stay-warning-banner" role="status" aria-live="polite">
-            まもなく滞在時間が終了します。滞在時間が0になると注文ができなくなります。
+            まもなく滞在時間が終了します。時間が0になると注文できなくなります。
           </div>
         )}
-
       </header>
 
       <main className="menu-content">{children}</main>
@@ -134,7 +118,7 @@ export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick 
         {showCheckout ? (
           <button
             type="button"
-            className={`footer-button checkout-button ${activeTab === 'categories' ? 'is-current' : ''} ${isExpired ? 'is-disabled' : ''}`}
+            className={`footer-button ${activeTab === 'categories' ? 'is-current' : ''} ${isExpired ? 'is-disabled' : ''}`}
             onClick={onCheckoutClick}
             disabled={isExpired}
           >
@@ -145,7 +129,7 @@ export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick 
             to="/menu"
             className={`footer-button ${activeTab === 'categories' ? 'is-current' : ''}`}
           >
-            ホームへ
+            ホーム
           </Link>
         )}
 
@@ -172,7 +156,7 @@ export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick 
           to="/call-staff"
           className={`footer-button ${activeTab === 'call' ? 'is-current' : ''}`}
         >
-          店員呼び出し
+          店員呼出し
         </Link>
       </footer>
 
@@ -184,11 +168,7 @@ export function MenuLayout({ activeTab, children, showCheckout, onCheckoutClick 
               <br />
               お会計画面へ移動します。
             </p>
-            <button
-              type="button"
-              className="stay-expired-action"
-              onClick={handleExpiredCheckout}
-            >
+            <button type="button" className="stay-expired-action" onClick={handleExpiredCheckout}>
               お会計へ
             </button>
           </div>
