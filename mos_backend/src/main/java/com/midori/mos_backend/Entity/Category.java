@@ -1,8 +1,7 @@
-package com.midori.mos_backend.entity;
+package com.midori.mos_backend.Entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "categories")
@@ -24,15 +23,10 @@ public class Category {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
-    private List<MenuItem> menuItems;
-
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
-
-    // Getters and Setters
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -48,7 +42,4 @@ public class Category {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public List<MenuItem> getMenuItems() { return menuItems; }
-    public void setMenuItems(List<MenuItem> menuItems) { this.menuItems = menuItems; }
 }
