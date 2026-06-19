@@ -31,10 +31,6 @@ export default function AppShell() {
   const navigate = useNavigate()
   const session = useSessionUser()
   const user = session.getUser()
-  const storedUseCase = session.getUseCase()
-
-  const [useCaseState, setUseCaseState] = useState(storedUseCase)
-  const [logoutOpen, setLogoutOpen] = useState(false)
 
   useEffect(() => {
     if (!user) {
@@ -47,15 +43,23 @@ export default function AppShell() {
     return normalizeAllowedUseCases(user.role, user.allowedUseCases)
   }, [user])
 
+  const storedUseCase = session.getUseCase()
+
+  // 初期値の決定
+  const [useCaseState, setUseCaseState] = useState(() => {
+    if(storedUseCase) return storedUseCase
+    if(allowedUseCases.length === 1) return allowedUseCases[0]
+  })
+
+  const [logoutOpen,setLogoutOpen] = useState(false)
+
   useEffect(() => {
-    if (!user) return
-    if (useCaseState) return
-    if (allowedUseCases.length === 1) {
-      const only = allowedUseCases[0]
-      session.setUseCase(only)
-      setUseCaseState(only)
+    if(!user) return
+    if(!useCaseState) return
+    if(!storedUseCase){
+      session.setUseCase(useCaseState)
     }
-  }, [user, useCaseState, allowedUseCases, session])
+  },[user, useCaseState, storedUseCase, session])
 
   const initialScreen = useMemo(() => getInitialScreen(useCaseState), [useCaseState])
   const nav = useNavStack(initialScreen)

@@ -41,14 +41,13 @@ function Orders() {
   const totalCount = orders.length
   const totalPages = Math.max(1, Math.ceil(visibleCount / PER_PAGE))
 
-  useEffect(() => {
-    if (page > totalPages) setPage(totalPages)
-  }, [page, totalPages])
+  // 描画用ページをclamp
+  const currentPage = Math.min(page,totalPages)
 
   const pageOrders = useMemo(() => {
-    const start = (page - 1) * PER_PAGE
-    return filteredOrders.slice(start, start + PER_PAGE)
-  }, [filteredOrders, page])
+    const start = (currentPage -1 ) * PER_PAGE
+    return filteredOrders.slice(start,start+PER_PAGE)
+  },[filteredOrders,currentPage])
 
   const startCooking = (id) => {
     setOrders((prev) =>
