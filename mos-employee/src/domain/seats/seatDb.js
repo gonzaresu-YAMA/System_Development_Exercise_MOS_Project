@@ -1,3 +1,9 @@
+// 座席データの正本
+// 役割：
+// - フロアごとの座席一覧を保存 / 読み込みする
+// - status と people を正規化する
+// - 特定フロアの座席取得 / 座席更新を共通化する
+
 const SEAT_STORAGE_KEY = 'seatStore_v2'
 
 export const SEAT_STATUS = {
@@ -17,9 +23,11 @@ export const SEAT_STATUS_LIST = [
 export const SEAT_STATUS_LABEL = Object.fromEntries(SEAT_STATUS_LIST.map((s) => [s.key, s.label]))
 export const SEAT_STATUS_COLOR = Object.fromEntries(SEAT_STATUS_LIST.map((s) => [s.key, s.color]))
 
+// フロアごとの初期座席を作る
 function makeSeatsForFloor(floor) {
   const start = floor === 1 ? 101 : 201
   const count = 12
+
   return Array.from({ length: count }, (_, i) => ({
     id: `T${start + i}`,
     status: SEAT_STATUS.empty,
@@ -27,6 +35,7 @@ function makeSeatsForFloor(floor) {
   }))
 }
 
+// 保存データを正規化する
 function normalizeSeat(seat, index, floor) {
   const fallbackId = `T${(floor === 1 ? 101 : 201) + index}`
   return {
@@ -45,6 +54,7 @@ function buildDefaultStore() {
   }
 }
 
+// 座席ストアを読み込む
 export function loadSeatStore() {
   const raw = sessionStorage.getItem(SEAT_STORAGE_KEY)
   const fallback = buildDefaultStore()
@@ -71,14 +81,17 @@ export function loadSeatStore() {
   }
 }
 
+// 座席ストアを保存する
 export function saveSeatStore(store) {
   sessionStorage.setItem(SEAT_STORAGE_KEY, JSON.stringify(store))
 }
 
+// 特定フロアの座席一覧を返す
 export function getSeatsByFloor(store, floor) {
   return store?.floors?.[floor] || []
 }
 
+// 特定フロアの 1 席だけ更新した新しい store を返す
 export function updateSeatInStore(store, floor, nextSeat) {
   const current = getSeatsByFloor(store, floor)
   return {

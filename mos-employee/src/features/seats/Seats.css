@@ -1,4 +1,4 @@
-/* ===== 共通 ===== */
+/* 座席管理画面のスタイル */
 .seats {
   padding: 8px 0;
 }
@@ -44,7 +44,6 @@
   background: rgba(0,0,0,0.04);
 }
 
-/* ===== フィルタ ===== */
 .seatTools {
   display: grid;
   gap: 10px;
@@ -76,7 +75,6 @@
   opacity: 0.75;
 }
 
-/* ===== 階選択 ===== */
 .floorSelect {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -105,7 +103,6 @@
   font-weight: 800;
 }
 
-/* ===== 座席一覧 ===== */
 .seatList {
   display: grid;
   gap: 10px;
@@ -184,7 +181,6 @@
   opacity: 0.75;
 }
 
-/* ===== overlay ===== */
 .seatOverlay {
   position: fixed;
   inset: 0;
@@ -192,7 +188,6 @@
   z-index: 50;
 }
 
-/* ===== 確認ポップ ===== */
 .confirmModal {
   position: fixed;
   left: 50%;
@@ -254,7 +249,6 @@
   opacity: 0.92;
 }
 
-/* ===== 編集モーダル ===== */
 .seatModal {
   position: fixed;
   left: 50%;
@@ -414,7 +408,6 @@
   font-size: 17px;
 }
 
-/* ===== toast ===== */
 .seatToast {
   position: fixed;
   left: 50%;

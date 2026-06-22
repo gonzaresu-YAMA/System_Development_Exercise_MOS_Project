@@ -1,3 +1,10 @@
+// 従業員データの正本
+// 役割：
+// - 従業員一覧の読み書き
+// - ID 採番
+// - role ごとの allowedUseCases の正規化
+// - ログイン認証
+
 const STAFF_KEY = 'staffList_v3'
 const SEQ_S_KEY = 'staffSeq_S_v2'
 const SEQ_A_KEY = 'staffSeq_A_v2'
@@ -31,18 +38,22 @@ const defaultStaff = [
   },
 ]
 
+// role からデフォルトの用途を返す
 export function getDefaultUseCasesFromRole(role) {
   if (role === 'manager') return ['hall', 'kitchen', 'admin']
   if (role === 'employee') return ['hall', 'kitchen', 'admin']
   return ['hall', 'kitchen']
 }
 
+// allowedUseCases を role に合わせて正規化する
+// アルバイトは admin を持てない
 export function normalizeAllowedUseCases(role, allowedUseCases) {
   const set = new Set(allowedUseCases || [])
   if (role === 'partTime') set.delete('admin')
   return Array.from(set)
 }
 
+// sessionStorage から従業員一覧を読む
 export function loadStaff() {
   const raw = sessionStorage.getItem(STAFF_KEY)
 
@@ -58,6 +69,7 @@ export function loadStaff() {
     const list = Array.isArray(parsed) ? parsed : defaultStaff
 
     const normalized = list.map((s, i) => {
+      // 旧データ互換：staff → employee に読み替える
       const role = s.role === 'staff' ? 'employee' : (s.role || 'employee')
       return {
         id: s.id || `S${pad6(i + 1)}`,
@@ -79,11 +91,13 @@ export function loadStaff() {
   }
 }
 
+// 従業員一覧を保存する
 export function saveStaff(list) {
   sessionStorage.setItem(STAFF_KEY, JSON.stringify(list))
   syncSeq(list)
 }
 
+// 現在の最大採番値を保存し直す
 function syncSeq(list) {
   const sNums = list
     .map((x) => x.id)
@@ -111,6 +125,7 @@ function nextSeq(key) {
   return next
 }
 
+// role に応じて ID を自動採番する
 export function generateIdByRole(role) {
   if (role === 'partTime') {
     const n = nextSeq(SEQ_A_KEY)
@@ -121,13 +136,16 @@ export function generateIdByRole(role) {
   return `S${pad6(n)}`
 }
 
+// ログイン認証
+// ここでは sessionStorage のデータを正本として判定しているが、
+// 将来はこの関数内部を API 呼び出しに置き換えればよい
 export function authenticate(id, password) {
   const list = loadStaff()
   const user = list.find((s) => s.id.toLowerCase() === String(id).toLowerCase())
 
   if (!user) return { ok: false, reason: 'IDが見つかりません' }
   if (!user.active) return { ok: false, reason: '無効化されています' }
-  if (user.password != password) return { ok: false, reason: 'パスワードが違います' }
+  if (user.password !== password) return { ok: false, reason: 'パスワードが違います' }
 
   return {
     ok: true,

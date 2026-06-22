@@ -1,3 +1,10 @@
+// 注文管理画面
+// 役割：
+// - 注文一覧の表示
+// - 未確認 → 調理中 → 提供待ち → 完了 の状態遷移
+// - 商品ごとの cooked チェック
+// - フィルタ / 検索 / 件数表示 / ページング
+
 import { useEffect, useMemo, useState } from 'react'
 import './Orders.css'
 
@@ -18,20 +25,35 @@ const FILTERS = [
 ]
 
 function Orders() {
+  // =========================
+  // state
+  // =========================
+
   const [orders, setOrders] = useState(() => loadOrders())
   const [statusFilter, setStatusFilter] = useState('all')
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
 
+  // =========================
+  // effect
+  // =========================
+
+  // 一覧が変わったら保存する
   useEffect(() => {
     saveOrders(orders)
   }, [orders])
 
+  // =========================
+  // 一覧の加工
+  // =========================
+
+  // 未確認件数
   const urgentCount = useMemo(
     () => orders.filter((o) => o.status === '未確認').length,
     [orders]
   )
 
+  // 検索 + ステータスフィルタ済み一覧
   const filteredOrders = useMemo(
     () => searchOrders(orders, query, statusFilter),
     [orders, query, statusFilter]
@@ -41,15 +63,20 @@ function Orders() {
   const totalCount = orders.length
   const totalPages = Math.max(1, Math.ceil(visibleCount / PER_PAGE))
 
-  useEffect(() => {
-    if (page > totalPages) setPage(totalPages)
-  }, [page, totalPages])
+  // currentPage を描画用に clamp する
+  // lint 的に effect 内 setState を避けるため、この方法を採用している
+  const currentPage = Math.min(page, totalPages)
 
   const pageOrders = useMemo(() => {
-    const start = (page - 1) * PER_PAGE
+    const start = (currentPage - 1) * PER_PAGE
     return filteredOrders.slice(start, start + PER_PAGE)
-  }, [filteredOrders, page])
+  }, [filteredOrders, currentPage])
 
+  // =========================
+  // 状態遷移
+  // =========================
+
+  // 未確認 → 調理中
   const startCooking = (id) => {
     setOrders((prev) =>
       prev.map((o) =>
@@ -60,6 +87,8 @@ function Orders() {
     )
   }
 
+  // 調理中の商品ごとの cooked 切り替え
+  // 全商品 cooked になると、注文全体を提供待ちへ進める
   const toggleCooked = (orderId, itemIndex) => {
     setOrders((prev) =>
       prev.map((o) => {
@@ -81,6 +110,7 @@ function Orders() {
     )
   }
 
+  // 提供待ち → 完了
   const completeServing = (id) => {
     setOrders((prev) =>
       prev.map((o) =>
@@ -91,14 +121,16 @@ function Orders() {
     )
   }
 
+  // =========================
+  // render
+  // =========================
+
   return (
     <section className="orders">
       <header className="ordersHeader">
         <div className="ordersHeaderLeft">
           <h2 className="ordersTitle">注文管理</h2>
-          <div className="ordersMeta">
-            表示 {visibleCount} 件 / 全 {totalCount} 件
-          </div>
+          <div className="ordersMeta">表示 {visibleCount} 件 / 全 {totalCount} 件</div>
         </div>
 
         {urgentCount > 0 && (
@@ -205,11 +237,12 @@ function Orders() {
         )}
       </div>
 
+      {/* ページャー */}
       <nav className="pager" aria-label="ページ切り替え">
         <button
           className="pagerBtn"
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
-          disabled={page === 1}
+          onClick={() => setPage(Math.max(1, currentPage - 1))}
+          disabled={currentPage === 1}
           type="button"
         >
           ←
@@ -219,7 +252,7 @@ function Orders() {
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
             <button
               key={n}
-              className={`pagerNum ${n === page ? 'active' : ''}`}
+              className={`pagerNum ${n === currentPage ? 'active' : ''}`}
               onClick={() => setPage(n)}
               type="button"
             >
@@ -230,8 +263,8 @@ function Orders() {
 
         <button
           className="pagerBtn"
-          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-          disabled={page === totalPages}
+          onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
+          disabled={currentPage === totalPages}
           type="button"
         >
           →

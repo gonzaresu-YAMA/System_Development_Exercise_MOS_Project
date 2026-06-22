@@ -1,3 +1,7 @@
+// ログイン画面
+// - ID / パスワードを入力して authenticate を呼ぶ
+// - 成功したら currentUser を session に保存し、/employee へ進む
+
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authenticate } from '../../domain/staff/staffDb'
@@ -11,6 +15,7 @@ function LoginPage() {
   const [pw, setPw] = useState('')
   const [error, setError] = useState('')
 
+  // 入力欄が両方埋まっている時だけログインボタンを有効にする
   const canSubmit = useMemo(() => id.trim() && pw.trim(), [id, pw])
 
   const handleLogin = (e) => {
@@ -23,6 +28,7 @@ function LoginPage() {
       return
     }
 
+    // ログイン成功時はユーザー情報を保存し、用途選択は初期化する
     setUser(result.user)
     clearUseCase()
     navigate('/employee', { replace: true })
@@ -57,11 +63,7 @@ function LoginPage() {
           />
         </div>
 
-        {error && (
-          <div className="errorBanner">
-            {error}
-          </div>
-        )}
+        {error && <div className="errorBanner">{error}</div>}
 
         <button className="primaryBtn" type="submit" disabled={!canSubmit}>
           ログイン

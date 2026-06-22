@@ -1,3 +1,7 @@
+// 業務（admin）のトップ画面
+// - 店長は「メニュー管理」と「従業員管理」を両方表示
+// - 社員は「メニュー管理」だけ表示
+
 import './AdminHub.css'
 
 export default function AdminHub({ user, onSelect }) {

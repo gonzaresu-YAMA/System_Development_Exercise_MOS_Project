@@ -1,8 +1,11 @@
+/* ブラウザ差を減らすための最低限のリセット */
 * {
   box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
   min-height: 100%;
@@ -12,6 +15,8 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-button, input, select {
+button,
+input,
+select {
   font: inherit;
 }

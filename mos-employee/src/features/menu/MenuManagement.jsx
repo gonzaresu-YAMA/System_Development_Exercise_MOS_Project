@@ -1,3 +1,15 @@
+// メニュー管理画面
+// 役割：
+// - 有効一覧 / 無効一覧 / 売切一覧 / タグ一覧を切り替える
+// - 商品追加 / 編集
+// - 無効化 / 再有効化 / 削除
+// - タグ作成 / 削除
+//
+// 重要：
+// - データの正本は domain/menu/menuDb.js と tagDb.js
+// - stock = null は「残数管理しない」商品
+// - stock = 0 は売切扱い
+
 import { useEffect, useMemo, useState } from 'react'
 import './MenuManagement.css'
 
@@ -17,11 +29,16 @@ import {
 const yen = (n) => `¥${Number(n || 0).toLocaleString('ja-JP')}`
 
 export default function MenuManagement({ onBack }) {
-  const [tab, setTab] = useState('active') // active | inactive | soldout | tags
+  // =========================
+  // state
+  // =========================
+
+  const [tab, setTab] = useState('active')
   const [menus, setMenus] = useState(() => loadMenus())
   const [tags, setTags] = useState(() => loadTags())
   const [query, setQuery] = useState('')
 
+  // 商品追加 / 編集
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState('add')
   const [form, setForm] = useState({
@@ -35,14 +52,24 @@ export default function MenuManagement({ onBack }) {
   })
   const [error, setError] = useState('')
 
+  // 無効一覧からの完全削除確認
   const [deleteTarget, setDeleteTarget] = useState(null)
 
+  // タグ追加フォーム
   const [tagInput, setTagInput] = useState('')
   const [tagError, setTagError] = useState('')
+
+  // =========================
+  // effect
+  // =========================
 
   useEffect(() => {
     saveMenus(menus)
   }, [menus])
+
+  // =========================
+  // 一覧加工
+  // =========================
 
   const filteredMenus = useMemo(() => {
     return searchMenus(menus, query)
@@ -62,6 +89,10 @@ export default function MenuManagement({ onBack }) {
     () => filteredMenus.filter((m) => isSoldOut(m)).sort((a, b) => a.name.localeCompare(b.name, 'ja')),
     [filteredMenus]
   )
+
+  // =========================
+  // モーダル操作
+  // =========================
 
   const openAdd = () => {
     setMode('add')
@@ -98,6 +129,7 @@ export default function MenuManagement({ onBack }) {
     setError('')
   }
 
+  // 価格を素早く調整するための補助ボタン用関数
   const adjustPrice = (delta) => {
     setForm((prev) => ({
       ...prev,
@@ -105,6 +137,7 @@ export default function MenuManagement({ onBack }) {
     }))
   }
 
+  // フォーム上でタグ選択を切り替える
   const toggleTagOnForm = (tag) => {
     setForm((prev) => {
       const exists = prev.tags.includes(tag)
@@ -116,6 +149,10 @@ export default function MenuManagement({ onBack }) {
       }
     })
   }
+
+  // =========================
+  // 保存処理
+  // =========================
 
   const save = () => {
     const name = String(form.name || '').trim()
@@ -132,6 +169,8 @@ export default function MenuManagement({ onBack }) {
     }
 
     let stockValue = null
+
+    // 残数管理 ON の時だけ stock を数値として扱う
     if (form.useStock) {
       const stockNum = Number(form.stock)
       if (!Number.isFinite(stockNum) || stockNum < 0) {
@@ -159,6 +198,10 @@ export default function MenuManagement({ onBack }) {
     closeModal()
   }
 
+  // =========================
+  // 状態変更
+  // =========================
+
   const disableMenu = (menu) => {
     setMenus((prev) => prev.map((x) => (x.id === menu.id ? { ...x, active: false } : x)))
   }
@@ -173,12 +216,17 @@ export default function MenuManagement({ onBack }) {
     setDeleteTarget(null)
   }
 
+  // =========================
+  // タグ操作
+  // =========================
+
   const handleAddTag = () => {
     const result = addTag(tagInput)
     if (!result.ok) {
       setTagError(result.reason)
       return
     }
+
     setTags(result.tags)
     setTagInput('')
     setTagError('')
@@ -187,6 +235,8 @@ export default function MenuManagement({ onBack }) {
   const handleRemoveTag = (tag) => {
     const nextTags = removeTag(tag)
     setTags(nextTags)
+
+    // 商品側からも削除したタグを外す
     setMenus((prev) =>
       prev.map((m) => ({
         ...m,
@@ -195,6 +245,7 @@ export default function MenuManagement({ onBack }) {
     )
   }
 
+  // 現在タブに応じて表示一覧を切り替える
   const list =
     tab === 'active'
       ? activeMenus
@@ -203,6 +254,10 @@ export default function MenuManagement({ onBack }) {
       : tab === 'soldout'
       ? soldOutMenus
       : []
+
+  // =========================
+  // render
+  // =========================
 
   return (
     <section className="menuPage">
@@ -224,6 +279,7 @@ export default function MenuManagement({ onBack }) {
         </div>
       </div>
 
+      {/* タブ切り替え */}
       <div className="tabs">
         <button className={tab === 'active' ? 'tab active' : 'tab'} type="button" onClick={() => setTab('active')}>
           有効一覧
@@ -239,6 +295,7 @@ export default function MenuManagement({ onBack }) {
         </button>
       </div>
 
+      {/* 商品検索 */}
       {tab !== 'tags' && (
         <input
           className="input"
@@ -248,6 +305,7 @@ export default function MenuManagement({ onBack }) {
         />
       )}
 
+      {/* 商品一覧系タブ */}
       {tab !== 'tags' && (
         <div className="list">
           {list.map((m) => (
@@ -265,11 +323,15 @@ export default function MenuManagement({ onBack }) {
                 <div className="meta">
                   <span className="chip">{m.id}</span>
                   <span className="chip">{yen(m.price)}</span>
+
+                  {/* 残数管理している商品だけ残数を表示 */}
                   {m.stock !== null && (
                     <span className={`chip ${Number(m.stock) === 0 ? 'dangerChip' : ''}`}>
                       残り {m.stock}
                     </span>
                   )}
+
+                  {/* stock = 0 なら売切バッジ */}
                   {isSoldOut(m) && <span className="badge">売切</span>}
                 </div>
               </div>
@@ -303,6 +365,7 @@ export default function MenuManagement({ onBack }) {
         </div>
       )}
 
+      {/* タグ一覧タブ */}
       {tab === 'tags' && (
         <div className="tagManager">
           <div className="tagAddBox">
@@ -334,6 +397,7 @@ export default function MenuManagement({ onBack }) {
         </div>
       )}
 
+      {/* 商品追加 / 編集モーダル */}
       {open && (
         <>
           <div className="overlay" onClick={closeModal} />
@@ -358,8 +422,12 @@ export default function MenuManagement({ onBack }) {
               <label className="label">
                 価格
                 <div className="priceEditor">
-                  <button className="priceBtn" type="button" onClick={() => adjustPrice(-100)}>-100</button>
-                  <button className="priceBtn" type="button" onClick={() => adjustPrice(-10)}>-10</button>
+                  <button className="priceBtn" type="button" onClick={() => adjustPrice(-100)}>
+                    -100
+                  </button>
+                  <button className="priceBtn" type="button" onClick={() => adjustPrice(-10)}>
+                    -10
+                  </button>
                   <input
                     className="input priceInput"
                     type="number"
@@ -367,8 +435,12 @@ export default function MenuManagement({ onBack }) {
                     value={form.price}
                     onChange={(e) => setForm({ ...form, price: e.target.value })}
                   />
-                  <button className="priceBtn" type="button" onClick={() => adjustPrice(10)}>+10</button>
-                  <button className="priceBtn" type="button" onClick={() => adjustPrice(100)}>+100</button>
+                  <button className="priceBtn" type="button" onClick={() => adjustPrice(10)}>
+                    +10
+                  </button>
+                  <button className="priceBtn" type="button" onClick={() => adjustPrice(100)}>
+                    +100
+                  </button>
                 </div>
               </label>
 
@@ -392,6 +464,7 @@ export default function MenuManagement({ onBack }) {
                 </div>
               </label>
 
+              {/* 残数管理 ON のときだけ数値入力を出す */}
               {form.useStock && (
                 <label className="label">
                   残数
@@ -437,6 +510,7 @@ export default function MenuManagement({ onBack }) {
         </>
       )}
 
+      {/* 無効一覧からの完全削除確認 */}
       {deleteTarget && (
         <>
           <div className="overlay" onClick={() => setDeleteTarget(null)} />
