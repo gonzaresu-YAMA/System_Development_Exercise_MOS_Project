@@ -6,6 +6,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * 商品を管理するリポジトリクラス
+ */
 @Repository
 public interface MenuItemRepository extends JpaRepository<MenuItem, Long> {
 

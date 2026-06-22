@@ -8,6 +8,9 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 注文を管理するリポジトリクラス
+ */
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
 

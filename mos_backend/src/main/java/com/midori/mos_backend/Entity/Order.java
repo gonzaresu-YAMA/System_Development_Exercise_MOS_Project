@@ -5,53 +5,91 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 注文のエンティティクラス
+ */
 @Entity
 @Table(name = "orders")
 public class Order {
 
+    /**
+     * 提供状況
+     */
     public enum Status {
-        PENDING, CONFIRMED, COOKING, READY, COMPLETED, CANCELLED
+        PENDING,    // 保留中
+        CONFIRMED,  // 確認済み
+        COOKING,    // 調理中
+        READY,      // 準備完了
+        COMPLETED,  // 配膳完了
+        CANCELLED   // キャンセルされた
     }
 
+    /** 注文ID */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** 卓ID */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seat_id")
     private Seat seat;
 
+    /** 卓番号 */
     @Column(name = "table_number", length = 20)
     private String tableNumber;
 
+    /** 
+     * 提供状況
+     * 初期状態はPENDING(保留中)にする
+     */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Status status = Status.PENDING;
 
+    /** 注文の総数 */
     @Column(name = "total_amount")
     private int totalAmount = 0;
 
+    /** コース種別 */
     @Column(name = "course_type", length = 50)
     private String courseType;
 
+    /**
+     * 注文商品
+     * 一つの商品内に、複数のものがあるものに対応
+     */
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
 
+    /** 作成日時 */
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    /** 更新日時 */
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    /** 注文日時 */
     @Column(name = "ordered_at")
     private LocalDateTime orderedAt;
 
+    /**
+     * 確認日時
+     * 注文を受託した日時を保存
+     */
     @Column(name = "confirmed_at")
     private LocalDateTime confirmedAt;
 
+    /**
+     * 配膳完了日時
+     * 配膳が完了した日時を保存
+     */
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
+    /**
+     * 作成時、現在日時を保存
+     */
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -59,11 +97,17 @@ public class Order {
         orderedAt = LocalDateTime.now();
     }
 
+    /**
+     * 更新時、現在時刻を保存
+     */
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
 
+    //------------------
+    // ゲッター/セッター
+    //------------------
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
