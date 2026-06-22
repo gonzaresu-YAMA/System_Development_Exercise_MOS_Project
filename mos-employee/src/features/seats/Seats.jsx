@@ -1,3 +1,14 @@
+// 座席管理画面
+// 役割：
+// - フロア選択
+// - 座席一覧表示
+// - 状態フィルタ
+// - 空席 → 使用中
+// - 使用中 → 会計済
+// - 会計済 → バッシング完了 → 空席
+// - 編集モーダル（人数 / 状態変更）
+// - QR再発行（現状はトースト表示）
+
 import { useEffect, useMemo, useState } from 'react'
 import './Seats.css'
 
@@ -21,6 +32,10 @@ const FILTERS = [
 ]
 
 function Seats() {
+  // =========================
+  // state
+  // =========================
+
   const [seatStore, setSeatStore] = useState(() => loadSeatStore())
   const [floor, setFloor] = useState(null)
   const [statusFilter, setStatusFilter] = useState('all')
@@ -30,10 +45,16 @@ function Seats() {
   const [dropOpen, setDropOpen] = useState(false)
   const [toast, setToast] = useState('')
 
+  // =========================
+  // effect
+  // =========================
+
+  // ストアが変わったら保存する
   useEffect(() => {
     saveSeatStore(seatStore)
   }, [seatStore])
 
+  // ESC でモーダル類を閉じる
   useEffect(() => {
     const onKeyDown = (e) => {
       if (e.key === 'Escape') {
@@ -47,11 +68,16 @@ function Seats() {
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [])
 
+  // トーストは2.5秒で自動消去
   useEffect(() => {
     if (!toast) return
     const timer = setTimeout(() => setToast(''), 2500)
     return () => clearTimeout(timer)
   }, [toast])
+
+  // =========================
+  // 一覧加工
+  // =========================
 
   const seats = useMemo(() => {
     if (!floor) return []
@@ -63,10 +89,18 @@ function Seats() {
     return seats.filter((seat) => seat.status === statusFilter)
   }, [seats, statusFilter])
 
+  // =========================
+  // 共通更新処理
+  // =========================
+
   const updateSeat = (nextSeat) => {
     if (!floor) return
     setSeatStore((prev) => updateSeatInStore(prev, floor, nextSeat))
   }
+
+  // =========================
+  // 座席カード操作
+  // =========================
 
   const handleSeatTap = (seat) => {
     if (seat.status === SEAT_STATUS.empty) {
@@ -79,6 +113,10 @@ function Seats() {
       return
     }
   }
+
+  // =========================
+  // 編集モーダル操作
+  // =========================
 
   const openEdit = (seat) => {
     setDraft({ ...seat })
@@ -93,10 +131,12 @@ function Seats() {
 
   const applyEdit = () => {
     if (!draft) return
+
     updateSeat({
       ...draft,
       people: Math.max(0, Number(draft.people || 0)),
     })
+
     closeEdit()
   }
 
@@ -105,16 +145,23 @@ function Seats() {
     setDropOpen(false)
   }
 
+  // =========================
+  // 状態遷移
+  // =========================
+
   const confirmOK = () => {
     if (!confirm) return
+
     const { mode, seat } = confirm
 
     if (mode === 'start') {
+      // 空席 → 使用中
       updateSeat({ ...seat, status: SEAT_STATUS.using })
       setToast(`${seat.id} のQRコードを発行しました`)
     }
 
     if (mode === 'pay') {
+      // 使用中 → 会計済
       updateSeat({ ...seat, status: SEAT_STATUS.paid })
     }
 
@@ -123,14 +170,18 @@ function Seats() {
 
   const confirmCancel = () => setConfirm(null)
 
+  // 会計済 → 空席（人数は 0 に戻す）
   const bashingDone = (seat) => {
     updateSeat({ ...seat, status: SEAT_STATUS.empty, people: 0 })
   }
 
+  // QR再発行
+  // 現状はトースト表示のみ。将来ここを API に置き換える想定
   const reissueQR = (seat) => {
     setToast(`${seat.id} のQRコードを再発行しました`)
   }
 
+  // 一覧から階選択へ戻る
   const backToFloorSelect = () => {
     setFloor(null)
     setStatusFilter('all')
@@ -138,6 +189,10 @@ function Seats() {
     setDraft(null)
     setDropOpen(false)
   }
+
+  // =========================
+  // render : フロア選択
+  // =========================
 
   if (floor == null) {
     return (
@@ -158,6 +213,10 @@ function Seats() {
       </section>
     )
   }
+
+  // =========================
+  // render : 座席一覧
+  // =========================
 
   return (
     <section className="seats">
@@ -239,6 +298,7 @@ function Seats() {
         {filteredSeats.length === 0 && <div className="seatEmpty">該当する座席がありません。</div>}
       </div>
 
+      {/* 空席 / 使用中 の確認モーダル */}
       {confirm && (
         <>
           <div className="seatOverlay" onClick={confirmCancel} />
@@ -278,6 +338,7 @@ function Seats() {
         </>
       )}
 
+      {/* 編集モーダル */}
       {draft && (
         <>
           <div className="seatOverlay" onClick={closeEdit} />
@@ -339,11 +400,7 @@ function Seats() {
             </div>
 
             <div className="modalActions three">
-              <button
-                className="qrReissueBtn"
-                type="button"
-                onClick={() => reissueQR(draft)}
-              >
+              <button className="qrReissueBtn" type="button" onClick={() => reissueQR(draft)}>
                 QRコードを再発行する
               </button>
               <button className="confirmBtn" onClick={applyEdit} type="button">
@@ -357,6 +414,7 @@ function Seats() {
         </>
       )}
 
+      {/* 下部トースト */}
       {toast && <div className="seatToast">{toast}</div>}
     </section>
   )

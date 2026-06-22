@@ -1,3 +1,6 @@
+// staff の表示名や UI 向けラベルをまとめるファイル
+// 将来 DB の内部値と UI 表示名を分けやすくするために用意している
+
 export const ROLE_LABEL = {
   manager: '店長',
   employee: '社員',

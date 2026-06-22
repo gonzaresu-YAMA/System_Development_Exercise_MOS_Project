@@ -1,3 +1,6 @@
+// 用途選択画面
+// allowed に入っている用途だけを表示する
+
 import { USECASE_LABEL } from '../../domain/staff/staffMapper'
 import './usecase.css'
 

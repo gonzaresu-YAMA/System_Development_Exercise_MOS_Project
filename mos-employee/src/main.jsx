@@ -1,3 +1,7 @@
+// アプリのエントリーポイント
+// - React アプリをブラウザに描画する
+// - Router と共通スタイルをここで読み込む
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
