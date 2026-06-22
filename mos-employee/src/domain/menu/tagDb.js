@@ -1,41 +1,25 @@
-const TAG_STORAGE_KEY = 'menuTags_v3'
+import { menuApi } from '../../services/api.js'
 
-const defaultTags = ['定番', '人気', '季節物', '期間限定']
-
-export function loadTags() {
-  const raw = sessionStorage.getItem(TAG_STORAGE_KEY)
-  if (!raw) {
-    sessionStorage.setItem(TAG_STORAGE_KEY, JSON.stringify(defaultTags))
-    return defaultTags
-  }
-  try {
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : defaultTags
-  } catch {
-    return defaultTags
-  }
+export async function loadTags() {
+  return menuApi.getTags()
 }
 
-export function saveTags(tags) {
-  sessionStorage.setItem(TAG_STORAGE_KEY, JSON.stringify(tags))
-}
+// タグは メニュー商品に付属して保存されるため、単独の save/add/remove は
+// MenuManagement 側でメニュー商品を更新することで実現する。
 
-export function addTag(name) {
+/** ローカル状態のタグリストに新しいタグを追加（重複チェック）
+ *  APIへの保存は行わない（メニュー商品保存時に反映される）  */
+export function addTagLocally(tags, name) {
   const value = String(name || '').trim()
-  const tags = loadTags()
-
   if (!value) return { ok: false, reason: 'タグ名を入力してください' }
   if (tags.some((t) => String(t).toLowerCase() === value.toLowerCase())) {
     return { ok: false, reason: '同じタグがすでにあります' }
   }
-
-  const next = [...tags, value]
-  saveTags(next)
-  return { ok: true, tags: next }
+  return { ok: true, tags: [...tags, value] }
 }
 
-export function removeTag(name) {
-  const tags = loadTags().filter((t) => t !== name)
-  saveTags(tags)
-  return tags
+/** ローカル状態のタグリストからタグを削除 */
+export function removeTagLocally(tags, name) {
+  return tags.filter((t) => t !== name)
 }
+

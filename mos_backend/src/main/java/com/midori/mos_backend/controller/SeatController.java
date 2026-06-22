@@ -52,10 +52,13 @@ public class SeatController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<Seat> updateStatus(
             @PathVariable Long id,
-            @RequestBody Map<String, String> body
+            @RequestBody Map<String, Object> body
     ) {
-        Seat.Status status = Seat.Status.valueOf(body.get("status").toUpperCase());
-        Seat seat = seatService.updateStatus(id, status);
+        Seat.Status status = Seat.Status.valueOf(((String) body.get("status")).toUpperCase());
+        Integer customerCount = body.get("customerCount") != null
+                ? ((Number) body.get("customerCount")).intValue()
+                : null;
+        Seat seat = seatService.updateStatus(id, status, customerCount);
         return ResponseEntity.ok(seat);
     }
 }

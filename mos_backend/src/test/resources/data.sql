@@ -14,3 +14,6 @@ INSERT INTO menu_items (id, category_id, name, price, is_sold_out, drink_plan_ex
 INSERT INTO seats (id, seat_number, floor, status, qr_code) VALUES
     (1, 'T1', 1, 'EMPTY', 'QR-T1'),
     (2, 'T2', 1, 'USING', 'QR-T2');
+
+INSERT INTO staff (id, name, role, active, password, allowed_use_cases) VALUES
+    ('S000001', 'テスト店長', 'manager', TRUE, '1111', 'hall,kitchen,admin');

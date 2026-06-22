@@ -3,7 +3,6 @@ import './Seats.css'
 
 import {
   loadSeatStore,
-  saveSeatStore,
   getSeatsByFloor,
   updateSeatInStore,
   SEAT_STATUS,
@@ -11,6 +10,7 @@ import {
   SEAT_STATUS_LABEL,
   SEAT_STATUS_COLOR,
 } from '../../domain/seats/seatDb'
+import { seatApi } from '../../services/api.js'
 
 const FILTERS = [
   { key: 'all', label: '全件' },
@@ -21,9 +21,10 @@ const FILTERS = [
 ]
 
 function Seats() {
-  const [seatStore, setSeatStore] = useState(() => loadSeatStore())
+  const [seatStore, setSeatStore] = useState({ floors: { 1: [], 2: [] } })
   const [floor, setFloor] = useState(null)
   const [statusFilter, setStatusFilter] = useState('all')
+  const [loading, setLoading] = useState(true)
 
   const [confirm, setConfirm] = useState(null)
   const [draft, setDraft] = useState(null)
@@ -31,8 +32,11 @@ function Seats() {
   const [toast, setToast] = useState('')
 
   useEffect(() => {
-    saveSeatStore(seatStore)
-  }, [seatStore])
+    loadSeatStore()
+      .then(setSeatStore)
+      .catch((e) => console.error('座席取得エラー:', e))
+      .finally(() => setLoading(false))
+  }, [])
 
   useEffect(() => {
     const onKeyDown = (e) => {
@@ -63,9 +67,17 @@ function Seats() {
     return seats.filter((seat) => seat.status === statusFilter)
   }, [seats, statusFilter])
 
-  const updateSeat = (nextSeat) => {
+  const updateSeat = async (nextSeat) => {
     if (!floor) return
+    // ローカル状態を楽観的に更新
     setSeatStore((prev) => updateSeatInStore(prev, floor, nextSeat))
+    // バックエンドを同期
+    try {
+      const saved = await seatApi.updateStatus(nextSeat._numId, nextSeat.status, nextSeat.people)
+      setSeatStore((prev) => updateSeatInStore(prev, floor, saved))
+    } catch (e) {
+      console.error('座席更新エラー:', e)
+    }
   }
 
   const handleSeatTap = (seat) => {
@@ -137,6 +149,10 @@ function Seats() {
     setConfirm(null)
     setDraft(null)
     setDropOpen(false)
+  }
+
+  if (loading) {
+    return <section className="seats"><p style={{ padding: '2rem' }}>読み込み中…</p></section>
   }
 
   if (floor == null) {

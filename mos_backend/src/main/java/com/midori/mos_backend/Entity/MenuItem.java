@@ -21,6 +21,12 @@ public class MenuItem {
     @Column(nullable = false)
     private int price = 0;
 
+    @Column
+    private Integer stock;
+
+    @Column(nullable = false)
+    private boolean active = true;
+
     @Column(name = "is_sold_out")
     private boolean soldOut = false;
 
@@ -29,6 +35,9 @@ public class MenuItem {
 
     @Column(name = "image_url", length = 500)
     private String imageUrl;
+
+    @Column(nullable = false, length = 500)
+    private String tags = "";
 
     @Column(name = "sort_order")
     private int sortOrder = 0;
@@ -62,6 +71,12 @@ public class MenuItem {
     public int getPrice() { return price; }
     public void setPrice(int price) { this.price = price; }
 
+    public Integer getStock() { return stock; }
+    public void setStock(Integer stock) { this.stock = stock; }
+
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
+
     public boolean isSoldOut() { return soldOut; }
     public void setSoldOut(boolean soldOut) { this.soldOut = soldOut; }
 
@@ -70,6 +85,9 @@ public class MenuItem {
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public String getTags() { return tags; }
+    public void setTags(String tags) { this.tags = tags != null ? tags : ""; }
 
     public int getSortOrder() { return sortOrder; }
     public void setSortOrder(int sortOrder) { this.sortOrder = sortOrder; }

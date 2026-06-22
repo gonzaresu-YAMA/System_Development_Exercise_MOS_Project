@@ -74,3 +74,9 @@ INSERT INTO seats (id, seat_number, floor, status, qr_code) VALUES
     (10, 'C2', 2, 'EMPTY', 'QR-C2'),
     (11, 'C3', 2, 'EMPTY', 'QR-C3'),
     (12, 'C4', 2, 'EMPTY', 'QR-C4');
+
+-- 従業員
+INSERT INTO staff (id, name, role, active, password, allowed_use_cases) VALUES
+    ('S000001', '店長 太郎',     'manager',  TRUE, '1111', 'hall,kitchen,admin'),
+    ('S000002', '社員 花子',     'employee', TRUE, '2222', 'hall,kitchen,admin'),
+    ('A000001', 'アルバイト 次郎', 'partTime', TRUE, '3333', 'hall,kitchen');

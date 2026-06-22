@@ -3,19 +3,20 @@ import './StaffManagement.css'
 
 import {
   loadStaff,
-  saveStaff,
   generateIdByRole,
   getDefaultUseCasesFromRole,
 } from '../../domain/staff/staffDb'
+import { staffApi } from '../../services/api.js'
 import {
   ROLE_LABEL,
   ROLE_OPTIONS,
 } from '../../domain/staff/staffMapper'
 
 function StaffManagement({ onBack }) {
-  const [staff, setStaff] = useState(() => loadStaff())
+  const [staff, setStaff] = useState([])
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState('active')
+  const [loading, setLoading] = useState(true)
 
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState('add')
@@ -35,8 +36,11 @@ function StaffManagement({ onBack }) {
   const [passwordConfirmTarget, setPasswordConfirmTarget] = useState(null)
 
   useEffect(() => {
-    saveStaff(staff)
-  }, [staff])
+    loadStaff()
+      .then(setStaff)
+      .catch((e) => console.error('従業員取得エラー:', e))
+      .finally(() => setLoading(false))
+  }, [])
 
   useEffect(() => {
     const onKeyDown = (e) => {
@@ -79,7 +83,7 @@ function StaffManagement({ onBack }) {
     const defaultRole = 'employee'
     setMode('add')
     setForm({
-      id: generateIdByRole(defaultRole),
+      id: generateIdByRole(defaultRole, staff),
       name: '',
       role: defaultRole,
       active: true,
@@ -115,7 +119,7 @@ function StaffManagement({ onBack }) {
         return {
           ...prev,
           role,
-          id: generateIdByRole(role),
+          id: generateIdByRole(role, staff),
           allowedUseCases: getDefaultUseCasesFromRole(role),
         }
       }
@@ -186,30 +190,37 @@ function StaffManagement({ onBack }) {
     commitSave(payload)
   }
 
-  const commitSave = (payload) => {
-    if (mode === 'add') {
-      setStaff((prev) => [
-        {
-          ...payload,
+  const commitSave = async (payload) => {
+    try {
+      if (mode === 'add') {
+        const staffData = {
+          id: payload.id,
+          name: payload.name,
+          role: payload.role,
           active: true,
-        },
-        ...prev,
-      ])
-    } else {
-      setStaff((prev) =>
-        prev.map((s) =>
-          s.id === payload.id
-            ? {
-                ...s,
-                name: payload.name,
-                role: payload.role,
-                active: payload.active,
-                allowedUseCases: payload.allowedUseCases,
-                password: payload.password ? payload.password : s.password,
-              }
-            : s
+          password: payload.password,
+          allowedUseCases: payload.allowedUseCases.join(','),
+        }
+        const created = await staffApi.create(staffData)
+        setStaff((prev) => [{ ...created, allowedUseCases: created.allowedUseCases || payload.allowedUseCases }, ...prev])
+      } else {
+        const staffData = {
+          id: payload.id,
+          name: payload.name,
+          role: payload.role,
+          active: payload.active,
+          password: payload.password || undefined,
+          allowedUseCases: payload.allowedUseCases.join(','),
+        }
+        const updated = await staffApi.update(payload.id, staffData)
+        setStaff((prev) =>
+          prev.map((s) => s.id === payload.id ? { ...updated, allowedUseCases: updated.allowedUseCases || payload.allowedUseCases } : s)
         )
-      )
+      }
+    } catch (e) {
+      console.error('従業員保存エラー:', e)
+      setError('保存に失敗しました')
+      return
     }
 
     setPasswordConfirmTarget(null)
@@ -222,15 +233,26 @@ function StaffManagement({ onBack }) {
 
   const cancelToggle = () => setConfirmTarget(null)
 
-  const confirmToggle = () => {
+  const confirmToggle = async () => {
     if (!confirmTarget) return
     const { id, nextActive } = confirmTarget
+    const target = staff.find((s) => s.id === id)
+    if (!target) return
 
-    setStaff((prev) =>
-      prev.map((s) =>
-        s.id === id ? { ...s, active: nextActive } : s
+    try {
+      await staffApi.update(id, {
+        ...target,
+        active: nextActive,
+        allowedUseCases: Array.isArray(target.allowedUseCases)
+          ? target.allowedUseCases.join(',')
+          : (target.allowedUseCases || ''),
+      })
+      setStaff((prev) =>
+        prev.map((s) => s.id === id ? { ...s, active: nextActive } : s)
       )
-    )
+    } catch (e) {
+      console.error('有効化/無効化エラー:', e)
+    }
 
     setConfirmTarget(null)
   }
@@ -242,6 +264,10 @@ function StaffManagement({ onBack }) {
     commitSave(passwordConfirmTarget.payload)
   }
 
+  if (loading) {
+    return <section className="staffPage"><p style={{ padding: '2rem' }}>読み込み中…</p></section>
+  }
+
   return (
     <section className="staffPage">
       <div className="staffHeader">
@@ -249,7 +275,6 @@ function StaffManagement({ onBack }) {
           <h2 className="staffTitle">従業員管理</h2>
           <div className="staffSub">削除はせず「無効化」で管理します</div>
         </div>
-
         <div className="staffHeaderActions">
           <button className="btn ghost" type="button" onClick={onBack}>
             戻る

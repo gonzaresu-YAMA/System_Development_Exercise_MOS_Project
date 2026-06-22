@@ -43,10 +43,13 @@ public class SeatService {
         return seatRepository.findByQrCode(qrCode);
     }
 
-    public Seat updateStatus(Long seatId, Seat.Status newStatus) {
+    public Seat updateStatus(Long seatId, Seat.Status newStatus, Integer customerCount) {
         Seat seat = seatRepository.findById(seatId)
                 .orElseThrow(() -> new IllegalArgumentException("Seat not found: " + seatId));
         seat.setStatus(newStatus);
+        if (customerCount != null) {
+            seat.setCustomerCount(customerCount);
+        }
         return seatRepository.save(seat);
     }
 }

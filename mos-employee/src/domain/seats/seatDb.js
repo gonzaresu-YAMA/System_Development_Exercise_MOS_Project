@@ -1,4 +1,4 @@
-const SEAT_STORAGE_KEY = 'seatStore_v2'
+import { seatApi } from '../../services/api.js'
 
 export const SEAT_STATUS = {
   empty: 'empty',
@@ -17,67 +17,37 @@ export const SEAT_STATUS_LIST = [
 export const SEAT_STATUS_LABEL = Object.fromEntries(SEAT_STATUS_LIST.map((s) => [s.key, s.label]))
 export const SEAT_STATUS_COLOR = Object.fromEntries(SEAT_STATUS_LIST.map((s) => [s.key, s.color]))
 
-function makeSeatsForFloor(floor) {
-  const start = floor === 1 ? 101 : 201
-  const count = 12
-  return Array.from({ length: count }, (_, i) => ({
-    id: `T${start + i}`,
-    status: SEAT_STATUS.empty,
-    people: 0,
-  }))
+function buildEmptyStore() {
+  return { floors: { 1: [], 2: [] } }
 }
 
-function normalizeSeat(seat, index, floor) {
-  const fallbackId = `T${(floor === 1 ? 101 : 201) + index}`
-  return {
-    id: seat?.id || fallbackId,
-    status: seat?.status || SEAT_STATUS.empty,
-    people: Number.isFinite(Number(seat?.people)) ? Math.max(0, Number(seat.people)) : 0,
+/** API から全座席を取得し、フロア別のストア構造に変換 */
+export async function loadSeatStore() {
+  const seats = await seatApi.getAll()
+  const store = buildEmptyStore()
+  for (const seat of seats) {
+    const f = seat.floor ?? 1
+    if (!store.floors[f]) store.floors[f] = []
+    store.floors[f].push(seat)
   }
+  return store
 }
 
-function buildDefaultStore() {
-  return {
-    floors: {
-      1: makeSeatsForFloor(1),
-      2: makeSeatsForFloor(2),
-    },
-  }
-}
-
-export function loadSeatStore() {
-  const raw = sessionStorage.getItem(SEAT_STORAGE_KEY)
-  const fallback = buildDefaultStore()
-
-  if (!raw) {
-    sessionStorage.setItem(SEAT_STORAGE_KEY, JSON.stringify(fallback))
-    return fallback
-  }
-
-  try {
-    const parsed = JSON.parse(raw)
-    return {
-      floors: {
-        1: Array.isArray(parsed?.floors?.[1])
-          ? parsed.floors[1].map((s, i) => normalizeSeat(s, i, 1))
-          : makeSeatsForFloor(1),
-        2: Array.isArray(parsed?.floors?.[2])
-          ? parsed.floors[2].map((s, i) => normalizeSeat(s, i, 2))
-          : makeSeatsForFloor(2),
-      },
-    }
-  } catch {
-    return fallback
-  }
-}
-
-export function saveSeatStore(store) {
-  sessionStorage.setItem(SEAT_STORAGE_KEY, JSON.stringify(store))
-}
+/** saveSeatStore は不要（各変更操作で直接 API を呼ぶ） */
+export function saveSeatStore() {}
 
 export function getSeatsByFloor(store, floor) {
   return store?.floors?.[floor] || []
 }
+
+export function updateSeatInStore(store, floor, nextSeat) {
+  const floors = { ...store.floors }
+  floors[floor] = (floors[floor] || []).map((s) =>
+    s.id === nextSeat.id ? nextSeat : s
+  )
+  return { ...store, floors }
+}
+
 
 export function updateSeatInStore(store, floor, nextSeat) {
   const current = getSeatsByFloor(store, floor)
