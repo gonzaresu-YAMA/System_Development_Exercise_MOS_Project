@@ -1,9 +1,10 @@
 import { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import { MenuLayout } from '../components/MenuLayout'
-import { CartContext } from '../CartContext'
+import { CartContext } from '../contexts/CartContext'
 import menuItems from '../data/menuItems'
 import useStayRemaining from '../hooks/useStayRemaining'
+import '../App.css'
 import '../menu.css'
 
 export default function OrderConfirmPage() {
@@ -12,8 +13,8 @@ export default function OrderConfirmPage() {
 
   const getFallbackImage = (item) => {
     if (item.image) return item.image
-    const menuItem = menuItems.find((menu) => String(menu.id) === String(item.id) || menu.name === item.name)
-    return menuItem?.image || ''
+    const found = menuItems.find((m) => String(m.id) === String(item.id) || m.name === item.name)
+    return found?.image || ''
   }
 
   const grouped = cartItems.reduce((acc, item) => {
@@ -35,14 +36,14 @@ export default function OrderConfirmPage() {
 
   const handleRemoveOne = (group) => {
     const target = group.items[0]
-    if (target) {
-      removeFromCart(target.cartId)
-    }
+    if (target) removeFromCart(target.cartId)
   }
 
   const handleAddOne = (group) => {
     addToCart({ id: group.itemId, name: group.name, price: group.price, image: group.image })
   }
+
+  const total = cartItems.reduce((sum, item) => sum + (item.price || 0), 0)
 
   return (
     <MenuLayout activeTab="hold">
@@ -51,24 +52,30 @@ export default function OrderConfirmPage() {
           <table className="order-table">
             <thead>
               <tr>
-                <th className="order-col-name">名称</th>
+                <th className="order-col-name">商品名</th>
                 <th className="order-col-thumb">画像</th>
-                <th className="order-col-action">&nbsp;</th>
+                <th className="order-col-action">操作</th>
                 <th className="order-col-qty">数量</th>
               </tr>
             </thead>
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td className="order-col-name">&nbsp;</td>
-                  <td className="order-col-thumb">&nbsp;</td>
-                  <td className="order-col-action">&nbsp;</td>
-                  <td className="order-col-qty">&nbsp;</td>
+                  <td colSpan={4} style={{ textAlign: 'center', color: 'var(--muted)', padding: '32px' }}>
+                    カートは空です
+                  </td>
                 </tr>
               ) : (
                 rows.map((group) => (
                   <tr key={group.name}>
-                    <td className="order-col-name">{group.name}</td>
+                    <td className="order-col-name">
+                      <div style={{ fontFamily: 'var(--font-serif)' }}>{group.name}</div>
+                      {group.price > 0 && (
+                        <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: 2 }}>
+                          ¥{group.price} × {group.items.length}
+                        </div>
+                      )}
+                    </td>
                     <td className="order-col-thumb">
                       {group.image ? (
                         <img src={group.image} alt={group.name} className="order-thumb" />
@@ -91,7 +98,6 @@ export default function OrderConfirmPage() {
                             type="button"
                             className="order-step-btn"
                             onClick={() => handleAddOne(group)}
-                            aria-label="数量を増やす"
                             disabled={isExpired}
                           >
                             ∧
@@ -100,7 +106,6 @@ export default function OrderConfirmPage() {
                             type="button"
                             className="order-step-btn"
                             onClick={() => handleRemoveOne(group)}
-                            aria-label="数量を減らす"
                             disabled={isExpired}
                           >
                             ∨
@@ -114,6 +119,20 @@ export default function OrderConfirmPage() {
               )}
             </tbody>
           </table>
+
+          {rows.length > 0 && (
+            <div style={{
+              padding: '12px 16px',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              borderTop: '1px solid var(--border)',
+              color: 'var(--gold)',
+              fontSize: '0.92rem',
+              fontWeight: 600
+            }}>
+              合計: ¥{total.toLocaleString()}
+            </div>
+          )}
 
           <div className="order-confirm-actions">
             {isExpired ? (

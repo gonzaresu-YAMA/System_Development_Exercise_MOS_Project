@@ -1,0 +1,540 @@
+/* ============================================================
+   MIDORI-TEI — menubook.css
+   v2: page-flip animation + item bottom sheet + mobile-first
+   ============================================================ */
+
+/* ──────────────────────────────────────────────────────────
+   1. BOOK CONTAINER
+   ────────────────────────────────────────────────────────── */
+
+.menu-book {
+  background: #14213d;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  will-change: transform;
+  user-select: none;
+  /* shadow gives the "book" depth */
+  box-shadow:
+    4px 4px 16px rgba(0,0,0,0.55),
+    -2px 0 8px rgba(0,0,0,0.3),
+    inset -3px 0 8px rgba(0,0,0,0.25);
+}
+
+/* ──────────────────────────────────────────────────────────
+   2. PAGE FLIP ANIMATIONS
+   "perspective" is included in each transform so we don't
+   need a wrapper element with its own CSS perspective.
+   transform-origin is set per class (outside keyframes).
+   ────────────────────────────────────────────────────────── */
+
+/* Going NEXT (swipe left): page folds away to the left */
+.flip-next-exit {
+  transform-origin: left center;
+  animation: flipNextExit 220ms ease-in forwards;
+}
+
+@keyframes flipNextExit {
+  from { transform: perspective(900px) rotateY(0deg);   opacity: 1; }
+  60%  { transform: perspective(900px) rotateY(-50deg); opacity: 0.6; }
+  to   { transform: perspective(900px) rotateY(-88deg); opacity: 0; }
+}
+
+.flip-next-enter {
+  transform-origin: left center;
+  animation: flipNextEnter 220ms ease-out forwards;
+}
+
+@keyframes flipNextEnter {
+  from { transform: perspective(900px) rotateY(88deg);  opacity: 0; }
+  40%  { transform: perspective(900px) rotateY(50deg);  opacity: 0.6; }
+  to   { transform: perspective(900px) rotateY(0deg);   opacity: 1; }
+}
+
+/* Going PREV (swipe right): page folds away to the right */
+.flip-prev-exit {
+  transform-origin: right center;
+  animation: flipPrevExit 220ms ease-in forwards;
+}
+
+@keyframes flipPrevExit {
+  from { transform: perspective(900px) rotateY(0deg);  opacity: 1; }
+  60%  { transform: perspective(900px) rotateY(50deg); opacity: 0.6; }
+  to   { transform: perspective(900px) rotateY(88deg); opacity: 0; }
+}
+
+.flip-prev-enter {
+  transform-origin: right center;
+  animation: flipPrevEnter 220ms ease-out forwards;
+}
+
+@keyframes flipPrevEnter {
+  from { transform: perspective(900px) rotateY(-88deg); opacity: 0; }
+  40%  { transform: perspective(900px) rotateY(-50deg); opacity: 0.6; }
+  to   { transform: perspective(900px) rotateY(0deg);   opacity: 1; }
+}
+
+/* ──────────────────────────────────────────────────────────
+   3. TOP / BOTTOM ORNAMENT
+   ────────────────────────────────────────────────────────── */
+
+.book-decor-top,
+.book-decor-bottom {
+  background: #14213d;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.book-decor-top  { border-bottom: 1px solid rgba(200,160,85,.22); }
+.book-decor-bottom { border-top: 1px solid rgba(200,160,85,.22); margin-top: 4px; }
+
+.book-sunburst {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ──────────────────────────────────────────────────────────
+   4. RESTAURANT NAME
+   ────────────────────────────────────────────────────────── */
+
+.book-restaurant-name {
+  text-align: center;
+  padding: 18px 16px 4px;
+  background: #14213d;
+}
+
+.book-name-en {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 300;
+  letter-spacing: 0.32em;
+  color: rgba(200,160,85,.65);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.book-name-ja {
+  font-family: var(--font-serif);
+  font-size: clamp(1.3rem, 4.5vw, 1.8rem);
+  font-weight: 600;
+  color: #e8d5a8;
+  letter-spacing: 0.24em;
+  margin: 0;
+}
+
+/* ──────────────────────────────────────────────────────────
+   5. CATEGORY HEADER
+   ────────────────────────────────────────────────────────── */
+
+.book-category-header {
+  text-align: center;
+  padding: 14px 16px 10px;
+  background: #14213d;
+}
+
+.book-category-label {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #c8a055;
+  letter-spacing: 0.22em;
+  position: relative;
+  padding: 0 22px;
+}
+
+.book-category-label::before,
+.book-category-label::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 1px;
+  background: rgba(200,160,85,.45);
+}
+.book-category-label::before { right: 0; }
+.book-category-label::after  { left:  0; }
+
+/* ──────────────────────────────────────────────────────────
+   6. ITEM LIST  (mobile: single column; wider: 2-col grid)
+   ────────────────────────────────────────────────────────── */
+
+.book-item-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 16px 12px;
+  background: #14213d;
+}
+
+/* ── single item row ── */
+.book-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 52px;                /* comfortable touch target */
+  padding: 10px 4px;
+  border-bottom: 1px solid rgba(200,160,85,.11);
+  cursor: pointer;
+  -webkit-tap-highlight-color: rgba(200,160,85,.08);
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.book-item:last-child { border-bottom: none; }
+
+.book-item:active:not(.is-sold-out) {
+  background: rgba(200,160,85,.1);
+}
+
+.book-item.is-sold-out {
+  opacity: 0.38;
+  cursor: default;
+}
+
+/* Left section: name + tags */
+.book-item-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+  max-width: 58%;
+}
+
+.book-item-name {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  color: #e8d5b8;
+  letter-spacing: 0.05em;
+  line-height: 1.4;
+}
+
+.book-item-tag {
+  font-size: 0.63rem;
+  color: rgba(200,160,85,.7);
+  letter-spacing: 0.04em;
+}
+.book-item-tag.sold-out { color: #ff8888; }
+
+/* Dotted leader */
+.book-item-dots {
+  flex: 1;
+  min-width: 12px;
+  border-bottom: 1px dotted rgba(200,160,85,.28);
+  margin-bottom: 2px;
+}
+
+/* Price */
+.book-item-price {
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  color: #c8a055;
+  font-weight: 500;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+/* ──────────────────────────────────────────────────────────
+   7. PAGE NAVIGATION (arrows + dots)
+   ────────────────────────────────────────────────────────── */
+
+.book-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 14px 0 2px;
+}
+
+.book-nav-arrow {
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: 1px solid rgba(200,160,85,.35);
+  border-radius: 50%;
+  color: #c8a055;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.18s, box-shadow 0.18s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.book-nav-arrow:active:not(:disabled) {
+  background: rgba(200,160,85,.15);
+  box-shadow: 0 0 10px rgba(200,160,85,.25);
+}
+
+.book-nav-arrow:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
+.book-nav-dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.book-nav-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.18);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s, transform 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.book-nav-dot.is-active {
+  background: #c8a055;
+  transform: scale(1.4);
+}
+
+/* ──────────────────────────────────────────────────────────
+   8. SWIPE HINT
+   ────────────────────────────────────────────────────────── */
+
+.book-swipe-hint {
+  text-align: center;
+  font-size: 0.66rem;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  margin: 4px 0 0;
+  opacity: 0.65;
+}
+
+/* ──────────────────────────────────────────────────────────
+   9. BOTTOM SHEET BACKDROP
+   ────────────────────────────────────────────────────────── */
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.68);
+  z-index: 190;
+  animation: fadeIn 0.2s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ──────────────────────────────────────────────────────────
+   10. ITEM DETAIL BOTTOM SHEET
+   ────────────────────────────────────────────────────────── */
+
+.item-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #1a1a2e;
+  border-radius: 22px 22px 0 0;
+  z-index: 200;
+  max-height: 82vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 0 env(safe-area-inset-bottom, 20px);
+  animation: sheetUp 0.3s cubic-bezier(0.34,1.26,0.64,1) forwards;
+  /* Book-style shadow */
+  box-shadow: 0 -6px 32px rgba(0,0,0,.55);
+}
+
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* Drag handle */
+.sheet-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(200,160,85,.35);
+  margin: 12px auto 0;
+}
+
+/* Product image */
+.sheet-image-wrap {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  margin-top: 14px;
+}
+
+.sheet-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Info section */
+.sheet-info {
+  padding: 16px 20px 4px;
+}
+
+.sheet-item-name {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #e8d5b8;
+  letter-spacing: 0.08em;
+  margin: 0 0 6px;
+}
+
+.sheet-tag {
+  font-size: 0.7rem;
+  color: rgba(200,160,85,.7);
+  margin: 0 0 6px;
+}
+
+.sheet-price {
+  font-family: var(--font-sans);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #c8a055;
+  margin: 0;
+  letter-spacing: 0.04em;
+}
+
+/* Quantity stepper */
+.sheet-qty-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin: 22px 20px 18px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(200,160,85,.25);
+  border-radius: 40px;
+  height: 56px;
+  overflow: hidden;
+}
+
+.sheet-qty-btn {
+  flex: 1;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: #c8a055;
+  font-size: 1.6rem;
+  font-weight: 300;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: rgba(200,160,85,.12);
+  transition: background 0.15s;
+  touch-action: manipulation;
+}
+
+.sheet-qty-btn:active {
+  background: rgba(200,160,85,.15);
+}
+
+.sheet-qty-val {
+  min-width: 56px;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #e8d5b8;
+  border-left: 1px solid rgba(200,160,85,.2);
+  border-right: 1px solid rgba(200,160,85,.2);
+  line-height: 56px;
+}
+
+/* Add to cart button */
+.sheet-add-btn {
+  display: block;
+  width: calc(100% - 40px);
+  margin: 0 20px 12px;
+  height: 58px;
+  background: linear-gradient(135deg, #c8a055, #9a7830);
+  border: none;
+  border-radius: 14px;
+  color: #0a0a0a;
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.sheet-add-btn:active:not(:disabled) {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
+
+.sheet-add-btn.is-added {
+  background: linear-gradient(135deg, #4caf82, #2e7d5a);
+  color: #fff;
+  cursor: default;
+}
+
+/* Close button */
+.sheet-close-btn {
+  display: block;
+  width: calc(100% - 40px);
+  margin: 0 20px 8px;
+  height: 48px;
+  background: transparent;
+  border: 1px solid rgba(200,160,85,.2);
+  border-radius: 12px;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.sheet-close-btn:active {
+  background: rgba(255,255,255,.04);
+}
+
+/* ──────────────────────────────────────────────────────────
+   11. TABLET: 2-COLUMN ITEM GRID
+   ────────────────────────────────────────────────────────── */
+
+@media (min-width: 600px) {
+  .book-item-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 20px;
+    padding: 0 24px 16px;
+  }
+
+  .book-item:nth-child(even) {
+    border-left: 1px solid rgba(200,160,85,.1);
+    padding-left: 14px;
+  }
+
+  .item-sheet {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: 480px;
+    border-radius: 22px 22px 0 0;
+  }
+
+  @keyframes sheetUp {
+    from { transform: translateX(-50%) translateY(100%); }
+    to   { transform: translateX(-50%) translateY(0); }
+  }
+}

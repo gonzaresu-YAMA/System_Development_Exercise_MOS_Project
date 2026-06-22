@@ -1,97 +1,122 @@
-// API base URL
+import axios from 'axios'
 
-// Axios instance
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
+const api = axios.create({
+  baseURL: BASE_URL,
+  timeout: 10000,
+  headers: { 'Content-Type': 'application/json' }
+})
 
-// Request interceptor
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      console.error('[API] Server error:', error.response.status, error.response.data)
+    } else if (error.request) {
+      console.error('[API] No response received:', error.request)
+    } else {
+      console.error('[API] Request setup error:', error.message)
+    }
+    return Promise.reject(error)
+  }
+)
 
+// ── Menu API ──────────────────────────────────────────────
 
-// Response interceptor
+export const menuApi = {
+  getCategories: () =>
+    api.get('/api/menu/categories').then((r) => r.data),
 
+  getItemsByCategory: (category) =>
+    api.get('/api/menu/items', { params: { category } }).then((r) => r.data),
 
-      // サーバーからエラーレスポンスが返された場合
+  getItemById: (id) =>
+    api.get(`/api/menu/items/${id}`).then((r) => r.data),
 
-      // リクエストが送信されたが、レスポンスが受信されなかった場合
+  searchItems: (keyword) =>
+    api.get('/api/menu/items/search', { params: { keyword } }).then((r) => r.data),
 
-      // リクエストの設定中にエラーが発生した場合
+  getItemsByPriceRange: (min, max) =>
+    api.get('/api/menu/items', { params: { minPrice: min, maxPrice: max } }).then((r) => r.data)
+}
 
+// ── Order API ─────────────────────────────────────────────
 
-// Menu API
+export const orderApi = {
+  createOrder: (orderRequest) =>
+    api.post('/api/orders', orderRequest).then((r) => r.data),
 
-  // 利用可能なメニュー取得
+  getOrderById: (id) =>
+    api.get(`/api/orders/${id}`).then((r) => r.data),
 
-  
-  // カテゴリ別メニュー取得
+  getOrdersByTable: (tableId) =>
+    api.get(`/api/orders/table/${tableId}`).then((r) => r.data),
 
-  
-  // メニューアイテム詳細取得
+  getTodayOrders: () =>
+    api.get('/api/orders/today').then((r) => r.data),
 
-  
-  // メニュー検索
+  getActiveOrders: () =>
+    api.get('/api/orders/active').then((r) => r.data),
 
-  
-  // 価格範囲でメニュー検索
+  getKitchenOrders: () =>
+    api.get('/api/orders/kitchen').then((r) => r.data),
 
+  addItemsToOrder: (orderId, items) =>
+    api.post(`/api/orders/${orderId}/items`, items).then((r) => r.data),
 
-// Table API
+  updateOrderStatus: (orderId, status) =>
+    api.patch(`/api/orders/${orderId}/status`, { status }).then((r) => r.data),
 
-  // 全テーブル取得
+  confirmOrder: (orderId) =>
+    api.patch(`/api/orders/${orderId}/confirm`).then((r) => r.data),
 
-  
-  // 利用可能なテーブル取得
-  
-  // テーブル番号で取得
-  
-  // QRコードでテーブル取得
-  
-  // テーブルステータス更新
-  
-  // QRコード画像取得
+  startCooking: (orderId) =>
+    api.patch(`/api/orders/${orderId}/cooking`).then((r) => r.data),
 
-// Order API
+  markReady: (orderId) =>
+    api.patch(`/api/orders/${orderId}/ready`).then((r) => r.data),
 
-  // 全注文取得
+  markServed: (orderId) =>
+    api.patch(`/api/orders/${orderId}/served`).then((r) => r.data),
 
-  // アクティブな注文取得
-  
-  // 厨房向け注文取得
-  
-  // 注文詳細取得
-  
-  // テーブル別注文取得
-  
-  // 今日の注文取得
+  markPaid: (orderId) =>
+    api.patch(`/api/orders/${orderId}/paid`).then((r) => r.data),
 
-  // 新規注文作成
-  
-  // 注文にアイテム追加
-  
-  // 注文ステータス更新
-  
-  // 注文確定
+  cancelOrder: (orderId) =>
+    api.patch(`/api/orders/${orderId}/cancel`).then((r) => r.data)
+}
 
-  // 調理開始
+// ── Seat/Table API ────────────────────────────────────────
 
-  // 配膳準備完了
-  
-  // 配膳完了
-  
-  // 会計完了
-  
-  // 注文キャンセル
-  
-  // 注文アイテムのステータス更新
+export const seatApi = {
+  getAllSeats: () =>
+    api.get('/api/seats').then((r) => r.data),
 
+  getAvailableSeats: () =>
+    api.get('/api/seats/available').then((r) => r.data),
 
-// Receipt API
+  getSeatByNumber: (number) =>
+    api.get(`/api/seats/${number}`).then((r) => r.data),
 
-  // 領収書テキスト取得
+  getSeatByQrCode: (qrCode) =>
+    api.get('/api/seats/qr', { params: { code: qrCode } }).then((r) => r.data),
 
-  
-  // 領収書HTML取得
+  updateSeatStatus: (seatId, status) =>
+    api.patch(`/api/seats/${seatId}/status`, { status }).then((r) => r.data)
+}
 
-  
-  // 領収書PDF取得
+// ── Receipt API ───────────────────────────────────────────
 
-  
-  // 領収書ダウンロード
+export const receiptApi = {
+  getReceiptText: (orderId) =>
+    api.get(`/api/receipts/${orderId}/text`).then((r) => r.data),
+
+  getReceiptHtml: (orderId) =>
+    api.get(`/api/receipts/${orderId}/html`).then((r) => r.data),
+
+  downloadReceipt: (orderId) =>
+    api.get(`/api/receipts/${orderId}/pdf`, { responseType: 'blob' }).then((r) => r.data)
+}
+
+export default api

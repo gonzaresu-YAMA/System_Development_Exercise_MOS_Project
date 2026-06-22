@@ -1,8 +1,9 @@
 import { useContext, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MenuLayout } from '../components/MenuLayout'
-import { CartContext } from '../CartContext'
+import { CartContext } from '../contexts/CartContext'
 import useStayRemaining from '../hooks/useStayRemaining'
+import '../App.css'
 import '../menu.css'
 
 export default function OrderSendPage() {
@@ -14,21 +15,13 @@ export default function OrderSendPage() {
   const { isExpired } = useStayRemaining()
 
   useEffect(() => {
-    if (cartItems.length === 0 && !isSent) {
-      navigate('/menu')
-    }
+    if (cartItems.length === 0 && !isSent) navigate('/menu')
   }, [cartItems, isSent, navigate])
 
   useEffect(() => {
     if (!isSent) return
-
-    const timerId = setTimeout(() => {
-      navigate('/menu')
-    }, 2300)
-
-    return () => {
-      clearTimeout(timerId)
-    }
+    const id = setTimeout(() => navigate('/menu'), 2300)
+    return () => clearTimeout(id)
   }, [isSent, navigate])
 
   useEffect(() => {
@@ -38,19 +31,17 @@ export default function OrderSendPage() {
     }
   }, [cartItems])
 
-  const proceedConfirm = () => {
-    const didConfirm = confirmOrder()
+  const proceedConfirm = async () => {
+    const didConfirm = await confirmOrder()
     if (!didConfirm) {
       navigate('/menu')
       return
     }
-
     setIsSent(true)
   }
 
   const handleWarningContinue = () => {
     setWarningType(null)
-
     if (pendingConfirm) {
       setPendingConfirm(false)
       sessionStorage.setItem('lastOrderAttemptAt', String(Date.now()))
@@ -59,39 +50,23 @@ export default function OrderSendPage() {
   }
 
   const handleConfirm = () => {
-    if (isExpired) {
+    if (isExpired || cartItems.length === 0) {
       navigate('/menu')
       return
     }
 
-    if (cartItems.length === 0) {
-      navigate('/menu')
-      return
-    }
+    const buildSig = (items) =>
+      Object.entries(
+        items.reduce((acc, i) => { acc[i.name] = (acc[i.name] || 0) + 1; return acc }, {})
+      ).sort(([a], [b]) => a.localeCompare(b)).map(([n, q]) => `${n}:${q}`).join('|')
 
-    const buildSignature = (items) => {
-      const counts = items.reduce((acc, item) => {
-        acc[item.name] = (acc[item.name] || 0) + 1
-        return acc
-      }, {})
-
-      return Object.entries(counts)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([name, qty]) => `${name}:${qty}`)
-        .join('|')
-    }
-
-    const currentSignature = buildSignature(cartItems)
-    const recentOrders = orderHistory.slice(0, 5)
-    const hasDuplicate = recentOrders.some((order) => (
-      buildSignature(order.items) === currentSignature
-    ))
-
+    const currentSig = buildSig(cartItems)
+    const hasDuplicate = orderHistory.slice(0, 5).some((o) => buildSig(o.items) === currentSig)
     const lastAttempt = Number(sessionStorage.getItem('lastOrderAttemptAt'))
-    const hasRapidDuplicate = Boolean(lastAttempt && Date.now() - lastAttempt < 1000)
+    const hasRapid = Boolean(lastAttempt && Date.now() - lastAttempt < 1000)
 
-    if (hasDuplicate || hasRapidDuplicate) {
-      setWarningType(hasRapidDuplicate ? 'rapid' : 'history')
+    if (hasDuplicate || hasRapid) {
+      setWarningType(hasRapid ? 'rapid' : 'history')
       setPendingConfirm(true)
       return
     }
@@ -105,7 +80,7 @@ export default function OrderSendPage() {
       {!isSent && !warningType && (
         <div className="modal-overlay">
           <div className="modal-card">
-            <p>注文を確定しますか？</p>
+            <p>注文を確定して送信しますか？</p>
             <div className="modal-actions">
               <button
                 type="button"
@@ -113,9 +88,9 @@ export default function OrderSendPage() {
                 onClick={handleConfirm}
                 disabled={cartItems.length === 0 || isExpired}
               >
-                はい
+                送信する
               </button>
-              <Link to="/menu" className="modal-button is-dark">いいえ</Link>
+              <Link to="/menu" className="modal-button is-dark">キャンセル</Link>
             </div>
           </div>
         </div>
@@ -126,35 +101,18 @@ export default function OrderSendPage() {
           <div className="modal-card">
             <p>
               注文が重複している可能性があります。
-              {warningType === 'history' && (
-                <>
-                  <br />
-                  過去5件以内に同じメニュー、同じ数量の注文があります。
-                </>
-              )}
-              
-              {warningType === 'rapid' && (
-                <>
-                  <br />
-                  1秒以内に同じ注文が送信されています。
-                </>
-              )}
+              {warningType === 'history' && <><br />過去5件以内に同じ注文があります。</>}
+              {warningType === 'rapid' && <><br />1秒以内に同じ操作が行われています。</>}
+              <br />続行しますか？
             </p>
             <div className="modal-actions">
-              <button
-                type="button"
-                className="modal-button"
-                onClick={handleWarningContinue}
-              >
-                続行
+              <button type="button" className="modal-button" onClick={handleWarningContinue}>
+                続行する
               </button>
               <Link
                 to="/menu"
                 className="modal-button is-dark"
-                onClick={() => {
-                  setWarningType(null)
-                  setPendingConfirm(false)
-                }}
+                onClick={() => { setWarningType(null); setPendingConfirm(false) }}
               >
                 キャンセル
               </Link>
@@ -166,9 +124,9 @@ export default function OrderSendPage() {
       {isSent && (
         <div className="toast-overlay" role="status" aria-live="polite">
           <div className="toast-card">
-            注文が送信されました
+            ご注文を承りました
             <br />
-            ホーム画面へ戻ります
+            メニュー画面へ戻ります
           </div>
         </div>
       )}

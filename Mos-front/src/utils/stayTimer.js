@@ -1,39 +1,40 @@
-const defaultRemainingSeconds = 90 * 60
 const countdownStorageKey = 'mosRemainingUntil'
 const selectedCourseKey = 'selectedCourse'
 
-const getInitialRemainingSeconds = () => {
-  const selectedCourse = sessionStorage.getItem(selectedCourseKey)
+const FAR_FUTURE = 365 * 24 * 60 * 60 * 1000  // 実質無制限 (1年)
 
-  if (selectedCourse === 'drink-2h') return 120 * 60
-  if (selectedCourse === 'drink-3h') return 180 * 60
-  if (selectedCourse === 'normal') return 90 * 60
+const getDurationMs = () => {
+  const course = sessionStorage.getItem(selectedCourseKey)
+  if (course === 'drink-2h') return 120 * 60 * 1000
+  if (course === 'drink-3h') return 180 * 60 * 1000
+  return FAR_FUTURE  // normal または未選択 → 無制限
+}
 
-  return defaultRemainingSeconds
+export const isNormalPlan = () => {
+  const course = sessionStorage.getItem(selectedCourseKey)
+  return !course || course === 'normal'
 }
 
 export const startStayTimer = () => {
-  const initialUntil = Date.now() + getInitialRemainingSeconds() * 1000
-  sessionStorage.setItem(countdownStorageKey, String(initialUntil))
-  return initialUntil
+  const until = Date.now() + getDurationMs()
+  sessionStorage.setItem(countdownStorageKey, String(until))
+  return until
 }
 
 export const resetStayTimer = () => startStayTimer()
 
 export const getStayUntil = () => {
-  const storedUntil = Number(sessionStorage.getItem(countdownStorageKey))
-
-  if (storedUntil) {
-    return storedUntil
-  }
-
-  return Date.now()
+  const stored = Number(sessionStorage.getItem(countdownStorageKey))
+  return stored || Date.now()
 }
 
 export const getRemainingSeconds = () => {
-  const until = getStayUntil()
-  const diffSeconds = Math.ceil((until - Date.now()) / 1000)
-  return Math.max(0, diffSeconds)
+  if (isNormalPlan()) return FAR_FUTURE / 1000
+  const diff = Math.ceil((getStayUntil() - Date.now()) / 1000)
+  return Math.max(0, diff)
 }
 
-export const isStayExpired = () => getRemainingSeconds() <= 0
+export const isStayExpired = () => {
+  if (isNormalPlan()) return false
+  return getRemainingSeconds() <= 0
+}

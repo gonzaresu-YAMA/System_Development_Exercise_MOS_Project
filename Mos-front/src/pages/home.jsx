@@ -3,25 +3,30 @@ import '../App.css'
 
 export default function Home() {
   return (
-    <>
-      <div className="page-title">
-        <h1>居酒屋みどり亭</h1>
-      </div>
+    <div className="home-root">
+      <div className="home-content">
+        <div className="home-logo">
+          <p className="home-logo-en">IZAKAYA MIDORI-TEI</p>
+          <h1 className="home-logo-ja">居酒屋みどり亭</h1>
+        </div>
 
-      <div className="welcome-text">
-        <h1>いらっしゃいませ</h1>
-        <h2>ボタンをお選びください</h2>
-      </div>
+        <div className="home-divider" />
 
-      <div className="button-row">
-        <Link to="/course" className="nav-button customer-button">
-          お客様用画面へ移行
-        </Link>
-      </div>
+        <div className="home-welcome">
+          <p className="home-welcome-main">いらっしゃいませ</p>
+          <p className="home-welcome-sub">ご利用方法をお選びください</p>
+        </div>
 
-      <Link to="/staff" className="nav-button staff-button">
-        スタッフ用画面
-      </Link>
-    </>
+        <div className="home-actions">
+          <Link to="/course" className="home-btn home-btn-primary">
+            ご注文はこちら
+          </Link>
+
+          <Link to="/staff" className="home-btn home-btn-ghost">
+            スタッフ用
+          </Link>
+        </div>
+      </div>
+    </div>
   )
 }

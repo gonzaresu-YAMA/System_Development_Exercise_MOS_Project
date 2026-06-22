@@ -1,19 +1,23 @@
 import { useEffect, useState } from 'react'
-import { getRemainingSeconds } from '../utils/stayTimer'
+import { getRemainingSeconds, isNormalPlan } from '../utils/stayTimer'
 
 export default function useStayRemaining() {
-  const [remainingSeconds, setRemainingSeconds] = useState(() => getRemainingSeconds())
+  const unlimited = isNormalPlan()
+  const [remainingSeconds, setRemainingSeconds] = useState(() =>
+    unlimited ? Infinity : getRemainingSeconds()
+  )
 
   useEffect(() => {
-    const timerId = setInterval(() => {
+    if (unlimited) return
+    const id = setInterval(() => {
       setRemainingSeconds(getRemainingSeconds())
     }, 1000)
-
-    return () => clearInterval(timerId)
-  }, [])
+    return () => clearInterval(id)
+  }, [unlimited])
 
   return {
     remainingSeconds,
-    isExpired: remainingSeconds <= 0
+    isExpired: unlimited ? false : remainingSeconds <= 0,
+    isUnlimited: unlimited
   }
 }
