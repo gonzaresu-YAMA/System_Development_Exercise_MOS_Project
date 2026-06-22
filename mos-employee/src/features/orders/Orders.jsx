@@ -10,11 +10,11 @@ import { orderApi } from '../../services/api.js'
 const PER_PAGE = 8
 
 const FILTERS = [
-  { key: 'all', label: '蜈ｨ莉ｶ' },
-  { key: '譛ｪ遒ｺ隱・, label: '譛ｪ遒ｺ隱・ },
-  { key: '隱ｿ逅・ｸｭ', label: '隱ｿ逅・ｸｭ' },
-  { key: '謠蝉ｾ帛ｾ・■', label: '謠蝉ｾ帛ｾ・■' },
-  { key: '螳御ｺ・, label: '螳御ｺ・ },
+  { key: 'all', label: '全件' },
+  { key: '未確認', label: '未確認' },
+  { key: '調理中', label: '調理中' },
+  { key: '提供待ち', label: '提供待ち' },
+  { key: '完了', label: '完了' },
 ]
 
 function Orders() {
@@ -29,7 +29,7 @@ function Orders() {
       const data = await loadOrders()
       setOrders(data)
     } catch (e) {
-      console.error('豕ｨ譁・叙蠕励お繝ｩ繝ｼ:', e)
+      console.error('注文取得エラー:', e)
     } finally {
       setLoading(false)
     }
@@ -37,13 +37,12 @@ function Orders() {
 
   useEffect(() => {
     fetchOrders()
-    // 30遘偵＃縺ｨ縺ｫ閾ｪ蜍墓峩譁ｰ
     const timer = setInterval(fetchOrders, 30_000)
     return () => clearInterval(timer)
   }, [fetchOrders])
 
   const urgentCount = useMemo(
-    () => orders.filter((o) => o.status === '譛ｪ遒ｺ隱・).length,
+    () => orders.filter((o) => o.status === '未確認').length,
     [orders]
   )
 
@@ -67,7 +66,7 @@ function Orders() {
       const updated = await orderApi.startCooking(o._numId)
       setOrders((prev) => prev.map((x) => (x.id === o.id ? updated : x)))
     } catch (e) {
-      console.error('隱ｿ逅・幕蟋九お繝ｩ繝ｼ:', e)
+      console.error('調理開始エラー:', e)
     }
   }
 
@@ -75,7 +74,7 @@ function Orders() {
     setOrders((prev) =>
       prev.map((o) => {
         if (o.id !== orderId) return o
-        if (o.status !== '隱ｿ逅・ｸｭ') return o
+        if (o.status !== '調理中') return o
 
         const nextItems = o.items.map((item, idx) =>
           idx === itemIndex ? { ...item, cooked: !item.cooked } : item
@@ -83,13 +82,12 @@ function Orders() {
         const allCooked = nextItems.length > 0 && nextItems.every((item) => item.cooked)
 
         if (allCooked) {
-          // 蜈ｨ繧｢繧､繝・Β隱ｿ逅・ｮ御ｺ・竊・繝舌ャ繧ｯ繧ｨ繝ｳ繝峨ｒ READY 縺ｫ譖ｴ譁ｰ
           orderApi.markReady(o._numId)
             .then((updated) => setOrders((prev2) => prev2.map((x) => (x.id === o.id ? updated : x))))
-            .catch((e) => console.error('謠蝉ｾ帛ｾ・■譖ｴ譁ｰ繧ｨ繝ｩ繝ｼ:', e))
+            .catch((e) => console.error('提供待ち更新エラー:', e))
         }
 
-        return { ...o, items: nextItems, status: allCooked ? '謠蝉ｾ帛ｾ・■' : '隱ｿ逅・ｸｭ' }
+        return { ...o, items: nextItems, status: allCooked ? '提供待ち' : '調理中' }
       })
     )
   }
@@ -99,31 +97,31 @@ function Orders() {
       const updated = await orderApi.markServed(o._numId)
       setOrders((prev) => prev.map((x) => (x.id === o.id ? updated : x)))
     } catch (e) {
-      console.error('謠蝉ｾ帛ｮ御ｺ・お繝ｩ繝ｼ:', e)
+      console.error('提供完了エラー:', e)
     }
   }
 
   if (loading) {
-    return <section className="orders"><p style={{ padding: '2rem' }}>隱ｭ縺ｿ霎ｼ縺ｿ荳ｭ窶ｦ</p></section>
+    return <section className="orders"><p style={{ padding: '2rem' }}>読み込み中…</p></section>
   }
 
   return (
     <section className="orders">
       <header className="ordersHeader">
         <div className="ordersHeaderLeft">
-          <h2 className="ordersTitle">豕ｨ譁・ｮ｡逅・/h2>
+          <h2 className="ordersTitle">注文管理</h2>
           <div className="ordersMeta">
-            陦ｨ遉ｺ {visibleCount} 莉ｶ / 蜈ｨ {totalCount} 莉ｶ
+            表示 {visibleCount} 件 / 全 {totalCount} 件
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           {urgentCount > 0 && (
             <div className="urgentCount">
-              譛ｪ遒ｺ隱・<strong>{urgentCount}</strong> 莉ｶ
+              未確認 <strong>{urgentCount}</strong> 件
             </div>
           )}
-          <button type="button" className="filterBtn" onClick={fetchOrders}>譖ｴ譁ｰ</button>
+          <button type="button" className="filterBtn" onClick={fetchOrders}>更新</button>
         </div>
       </header>
 
@@ -151,7 +149,7 @@ function Orders() {
             setQuery(e.target.value)
             setPage(1)
           }}
-          placeholder="讀懃ｴ｢・亥酷逡ｪ蜿ｷ / 蝠・刀蜷搾ｼ・
+          placeholder="検索（卓番号 / 商品名）"
         />
       </div>
 
@@ -175,42 +173,42 @@ function Orders() {
                       type="button"
                       className={`cookCheck ${it.cooked ? 'checked' : ''}`}
                       onClick={() => toggleCooked(o.id, idx)}
-                      disabled={o.status !== '隱ｿ逅・ｸｭ'}
-                      title={o.status !== '隱ｿ逅・ｸｭ' ? '隱ｿ逅・ｸｭ縺ｮ縺ｨ縺阪□縺第桃菴懊〒縺阪∪縺・ : ''}
+                      disabled={o.status !== '調理中'}
+                      title={o.status !== '調理中' ? '調理中のときだけ操作できます' : ''}
                     >
-                      {it.cooked ? '笨・ : ''}
+                      {it.cooked ? '✓' : ''}
                     </button>
 
                     <span className="itemName">{it.name}</span>
                   </div>
 
-                  <span className="itemQty">ﾃ・{it.qty}</span>
+                  <span className="itemQty">× {it.qty}</span>
                 </li>
               ))}
             </ul>
 
             <div className="orderActions">
-              {o.status === '譛ｪ遒ｺ隱・ && (
+              {o.status === '未確認' && (
                 <button className="primaryBtn2" type="button" onClick={() => startCooking(o)}>
-                  遒ｺ隱・
+                  確認
                 </button>
               )}
 
-              {o.status === '隱ｿ逅・ｸｭ' && (
+              {o.status === '調理中' && (
                 <button className="waitingBtn" type="button" disabled>
-                  蜈ｨ譁咏炊縺ｮ隱ｿ逅・ｮ御ｺ・〒謠蝉ｾ帛ｾ・■縺ｫ縺ｪ繧翫∪縺・
+                  全料理の調理完了で提供待ちになります
                 </button>
               )}
 
-              {o.status === '謠蝉ｾ帛ｾ・■' && (
+              {o.status === '提供待ち' && (
                 <button className="primaryBtn2" type="button" onClick={() => completeServing(o)}>
-                  謠蝉ｾ帛ｮ御ｺ・
+                  提供完了
                 </button>
               )}
 
-              {o.status === '螳御ｺ・ && (
+              {o.status === '完了' && (
                 <button className="doneBtn" type="button" disabled>
-                  螳御ｺ・ｸ医∩
+                  完了済み
                 </button>
               )}
             </div>
@@ -219,19 +217,19 @@ function Orders() {
 
         {pageOrders.length === 0 && (
           <div className="emptyState">
-            <p>隧ｲ蠖薙☆繧区ｳｨ譁・′縺ゅｊ縺ｾ縺帙ｓ縲・/p>
+            <p>該当する注文がありません。</p>
           </div>
         )}
       </div>
 
-      <nav className="pager" aria-label="繝壹・繧ｸ蛻・ｊ譖ｿ縺・>
+      <nav className="pager" aria-label="ページ切り替え">
         <button
           className="pagerBtn"
           onClick={() => setPage((p) => Math.max(1, p - 1))}
           disabled={page === 1}
           type="button"
         >
-          竊・
+          ←
         </button>
 
         <div className="pagerNums">
@@ -253,7 +251,7 @@ function Orders() {
           disabled={page === totalPages}
           type="button"
         >
-          竊・
+          →
         </button>
       </nav>
     </section>
@@ -261,4 +259,3 @@ function Orders() {
 }
 
 export default Orders
-

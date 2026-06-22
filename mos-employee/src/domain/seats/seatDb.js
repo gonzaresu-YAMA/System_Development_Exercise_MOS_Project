@@ -47,15 +47,3 @@ export function updateSeatInStore(store, floor, nextSeat) {
   )
   return { ...store, floors }
 }
-
-
-export function updateSeatInStore(store, floor, nextSeat) {
-  const current = getSeatsByFloor(store, floor)
-  return {
-    ...store,
-    floors: {
-      ...store.floors,
-      [floor]: current.map((seat) => (seat.id === nextSeat.id ? nextSeat : seat)),
-    },
-  }
-}
