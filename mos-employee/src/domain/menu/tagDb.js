@@ -41,7 +41,7 @@ export function addTag(name) {
   if (!value) return { ok: false, reason: 'タグ名を入力してください' }
 
   // 大文字小文字を無視して重複判定する
-  if (tags.some((t) => String(t).toLowerCase() == value.toLowerCase())) {
+  if (tags.some((t) => String(t).toLowerCase() === value.toLowerCase())) {
     return { ok: false, reason: '同じタグがすでにあります' }
   }
 
@@ -53,7 +53,7 @@ export function addTag(name) {
 // タグ削除
 // ※ 商品側のタグ参照解除は feature 側で同時に行う
 export function removeTag(name) {
-  const tags = loadTags().filter((t) => t != name)
+  const tags = loadTags().filter((t) => t !== name)
   saveTags(tags)
   return tags
 }
