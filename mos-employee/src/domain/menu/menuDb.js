@@ -36,10 +36,3 @@ export function searchMenus(list, query) {
   })
 }
 
-
-  return list.filter((m) => (
-    String(m.id).toLowerCase().includes(q) ||
-    String(m.name).toLowerCase().includes(q) ||
-    (m.tags || []).some((t) => String(t).toLowerCase().includes(q))
-  ))
-}
