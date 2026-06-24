@@ -6,6 +6,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * 注文商品を管理するリポジトリインターフェース
+ */
 @Repository
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
 

@@ -149,12 +149,14 @@ class OrderServiceTest {
     void addItemsToOrder_updatesTotal() {
         Order order = orderService.createOrder(buildRequest(1L, "normal", 1L, "ねぎま", 180));
         int initialTotal = order.getTotalAmount();
+        int initialSize = order.getItems().size();
 
         OrderItemRequest extra = new OrderItemRequest();
         extra.setMenuItemId(2L); extra.setItemName("もも"); extra.setUnitPrice(180); extra.setQuantity(1);
         Order updated = orderService.addItemsToOrder(order.getId(), List.of(extra));
 
         assertThat(updated.getTotalAmount()).isEqualTo(initialTotal + 180);
-        assertThat(updated.getItems()).hasSizeGreaterThan(order.getItems().size());
+        // assertThat(updated.getItems()).hasSizeGreaterThan(order.getItems().size());
+        assertThat(updated.getItems()).hasSizeGreaterThan(initialSize);
     }
 }
