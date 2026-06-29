@@ -376,8 +376,10 @@ function StaffManagement({ onBack }) {
         </div>
       </div>
 
+      {/* 従業員リスト: フィルタ・検索後の結果を表示 */}
       <div className="staffList">
         {filtered.map((s) => (
+          // 無効スタッフは 'inactive' クラスを追加してスタイルを暗くする
           <div key={s.id} className={`staffRow ${s.active ? '' : 'inactive'}`}>
             <div className="staffMain">
               <div className="staffName">{s.name}</div>
@@ -395,6 +397,7 @@ function StaffManagement({ onBack }) {
                 編集
               </button>
 
+              {/* 有効なら「無効化」ボタン、無効なら「有効化」ボタンを表示 */}
               <button
                 className={`btn small ${s.active ? 'warn' : 'primary'}`}
                 type="button"
@@ -413,8 +416,10 @@ function StaffManagement({ onBack }) {
         )}
       </div>
 
+      {/* 追加・編集モーダル */}
       {open && (
         <>
+          {/* オーバーレイをクリックで閉じる */}
           <div className="overlay" onClick={closeModal} />
           <div className="modal" role="dialog" aria-modal="true">
             <div className="modalTitle">
@@ -434,6 +439,7 @@ function StaffManagement({ onBack }) {
 
               <label className="label">
                 役職
+                {/* handleRoleChange が ID と allowedUseCases も同時に更新する */}
                 <select
                   className="input"
                   value={form.role}
@@ -449,9 +455,11 @@ function StaffManagement({ onBack }) {
 
               <label className="label">
                 従業員ID
+                {/* ID は自動採番のため disabled（手動入力不可） */}
                 <input className="input" value={form.id} disabled />
               </label>
 
+              {/* 有効/無効の切り替えは編集モードのみ（追加時は常に有効） */}
               {mode === 'edit' && (
                 <label className="label row">
                   状態
@@ -474,6 +482,7 @@ function StaffManagement({ onBack }) {
                 </label>
               )}
 
+              {/* 新規追加時のパスワード入力 */}
               {mode === 'add' && (
                 <>
                   <label className="label">
@@ -500,6 +509,7 @@ function StaffManagement({ onBack }) {
                 </>
               )}
 
+              {/* 編集時のパスワード変更フォーム（全フィールド空欄 = 変更しない） */}
               {mode === 'edit' && (
                 <>
                   <label className="label">
@@ -541,6 +551,7 @@ function StaffManagement({ onBack }) {
                 </>
               )}
 
+              {/* バリデーションエラーメッセージ */}
               {error && <div className="error">{error}</div>}
             </div>
 
@@ -556,6 +567,7 @@ function StaffManagement({ onBack }) {
         </>
       )}
 
+      {/* 有効化/無効化 確認モーダル */}
       {confirmTarget && (
         <>
           <div className="overlay" onClick={cancelToggle} />
@@ -583,6 +595,7 @@ function StaffManagement({ onBack }) {
         </>
       )}
 
+      {/* パスワード変更 二重確認モーダル（誤操作防止） */}
       {passwordConfirmTarget && (
         <>
           <div className="overlay" onClick={cancelPasswordConfirm} />
