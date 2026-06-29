@@ -307,6 +307,7 @@ export default function MenuManagement({ onBack }) {
         </div>
       </div>
 
+      {/* タブ切り替え: active/inactive/soldout/tags */}
       <div className="tabs">
         <button className={tab === 'active' ? 'tab active' : 'tab'} type="button" onClick={() => setTab('active')}>
           有効一覧
@@ -322,6 +323,7 @@ export default function MenuManagement({ onBack }) {
         </button>
       </div>
 
+      {/* 検索ボックス: タグ一覧タブでは不要なため非表示 */}
       {tab !== 'tags' && (
         <input
           className="input"
@@ -331,6 +333,7 @@ export default function MenuManagement({ onBack }) {
         />
       )}
 
+      {/* 商品リスト（タグタブ以外） */}
       {tab !== 'tags' && (
         <div className="list">
           {list.map((m) => (
@@ -338,6 +341,7 @@ export default function MenuManagement({ onBack }) {
               <div className="main">
                 <div className="nameLine">
                   <span className="name">{m.name}</span>
+                  {/* タグを横並びでバッジ表示 */}
                   <div className="tags">
                     {(m.tags || []).map((t) => (
                       <span key={t} className="tag">{t}</span>
@@ -348,11 +352,13 @@ export default function MenuManagement({ onBack }) {
                 <div className="meta">
                   <span className="chip">{m.id}</span>
                   <span className="chip">{yen(m.price)}</span>
+                  {/* stock が null でないときのみ残数を表示（残数 0 は赤色） */}
                   {m.stock !== null && (
                     <span className={`chip ${Number(m.stock) === 0 ? 'dangerChip' : ''}`}>
                       残り {m.stock}
                     </span>
                   )}
+                  {/* isSoldOut(m): active かつ stock=0 のときに売切バッジを表示 */}
                   {isSoldOut(m) && <span className="badge">売切</span>}
                 </div>
               </div>
@@ -362,17 +368,20 @@ export default function MenuManagement({ onBack }) {
                   編集
                 </button>
 
+                {/* 有効一覧タブのみ「無効化」を表示（active: false に更新） */}
                 {tab === 'active' && (
                   <button className="btn small warn" type="button" onClick={() => disableMenu(m)}>
                     無効化
                   </button>
                 )}
 
+                {/* 無効一覧タブのみ「再有効化」と「削除」を表示 */}
                 {tab === 'inactive' && (
                   <>
                     <button className="btn small primary" type="button" onClick={() => enableMenu(m)}>
                       再有効化
                     </button>
+                    {/* 削除はsetDeleteTargetで確認モーダルを開く（直接削除しない） */}
                     <button className="btn small warn" type="button" onClick={() => setDeleteTarget(m)}>
                       削除
                     </button>
@@ -386,6 +395,7 @@ export default function MenuManagement({ onBack }) {
         </div>
       )}
 
+      {/* タグ管理タブ: タグの追加と削除 */}
       {tab === 'tags' && (
         <div className="tagManager">
           <div className="tagAddBox">
@@ -406,6 +416,7 @@ export default function MenuManagement({ onBack }) {
             {tags.map((tag) => (
               <div key={tag} className="tagRow">
                 <span className="tag">{tag}</span>
+                {/* タグ削除: ローカルリストから除去 + そのタグを持つ全商品も更新 */}
                 <button className="btn small warn" type="button" onClick={() => handleRemoveTag(tag)}>
                   削除
                 </button>
