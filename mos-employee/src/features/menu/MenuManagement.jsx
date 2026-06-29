@@ -242,6 +242,7 @@ export default function MenuManagement({ onBack }) {
     setDeleteTarget(null)
   }
 
+  // タグを追加する（重複チェックは addTagLocally が担当）
   const handleAddTag = () => {
     const result = addTagLocally(tags, tagInput)
     if (!result.ok) {
@@ -253,10 +254,21 @@ export default function MenuManagement({ onBack }) {
     setTagError('')
   }
 
+  /**
+   * タグを削除する
+   *
+   * タグには独立した削除 API がないため、以下の手順で対応する:
+   *   1. ローカルのタグリストから即座に削除（画面上は消える）
+   *   2. そのタグを持つ全商品に対して PUT リクエストを送り、タグを除いて保存
+   *
+   * for...of で順番に処理している理由:
+   *   Promise.all で並列実行すると多数のリクエストが同時に飛ぶため、
+   *   サーバー負荷を考慮して順次処理している
+   */
   const handleRemoveTag = async (tag) => {
     // ローカルのタグリストから削除
     setTags((prev) => removeTagLocally(prev, tag))
-    // そのタグを持つ全メニュー商品を更新
+    // そのタグを持つ全メニュー商品を更新（タグを除いて保存）
     const affected = menus.filter((m) => (m.tags || []).includes(tag))
     for (const menu of affected) {
       const updated = { ...menu, tags: menu.tags.filter((t) => t !== tag) }
@@ -269,14 +281,11 @@ export default function MenuManagement({ onBack }) {
     }
   }
 
+  // 現在のタブに対応する商品リストを選択する（tags タブは別区画に描画するため空配列）
   const list =
-    tab === 'active'
-      ? activeMenus
-      : tab === 'inactive'
-      ? inactiveMenus
-      : tab === 'soldout'
-      ? soldOutMenus
-      : []
+    tab === 'active'   ? activeMenus   :
+    tab === 'inactive' ? inactiveMenus :
+    tab === 'soldout'  ? soldOutMenus  : []
 
   return (
     <section className="menuPage">
