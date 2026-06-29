@@ -1,3 +1,19 @@
+/**
+ * 従業員管理画面（業務用途 - 店長専用）
+ *
+ * 従業員の追加・編集・有効化/無効化を行う画面。
+ * AdminHub から store されている（role === 'manager' のみアクセス可能）。
+ *
+ * 重要な設計方針（削除しない）:
+ *   従業員はシステム上から完全削除せず「無効化」で管理する。
+ *   理由: 過去の注文履歴に担当者情報が残るため。
+ *
+ * パスワード変更フロー:
+ *   1. 編集モーダルで「現在のパスワード + 新しいパスワード + 確認」を入力
+ *   2. save() が validate() でチェック
+ *   3. パスワード変更時は passwordConfirmTarget を設定して二重確認モーダルを表示
+ *   4. confirmPasswordChange() で commitSave() を実行
+ */
 import { useEffect, useMemo, useState } from 'react'
 import './StaffManagement.css'
 
@@ -13,28 +29,32 @@ import {
 } from '../../domain/staff/staffMapper'
 
 function StaffManagement({ onBack }) {
-  const [staff, setStaff] = useState([])
-  const [query, setQuery] = useState('')
-  const [filter, setFilter] = useState('active')
+  const [staff, setStaff] = useState([])         // 全従業員リスト
+  const [query, setQuery] = useState('')          // 検索ワード
+  const [filter, setFilter] = useState('active')  // 'all' | 'active' | 'inactive'
   const [loading, setLoading] = useState(true)
 
+  // 追加/編集モーダルの状態
   const [open, setOpen] = useState(false)
-  const [mode, setMode] = useState('add')
+  const [mode, setMode] = useState('add')  // 'add' | 'edit'
   const [form, setForm] = useState({
-    id: '',
-    name: '',
-    role: 'employee',
-    active: true,
-    currentPassword: '',
-    password: '',
+    id:             '',
+    name:           '',
+    role:           'employee',
+    active:         true,
+    currentPassword: '',   // 編集時のパスワード変更に必要（本人確認）
+    password:        '',   // 新しいパスワード（空文字 = 変更しない）
     passwordConfirm: '',
     allowedUseCases: ['hall', 'kitchen', 'admin'],
   })
   const [error, setError] = useState('')
 
+  // 有効化/無効化の確認モーダル対象（null = 非表示）
   const [confirmTarget, setConfirmTarget] = useState(null)
+  // パスワード変更の二重確認モーダル対象（null = 非表示）
   const [passwordConfirmTarget, setPasswordConfirmTarget] = useState(null)
 
+  // 初回マウント時に全従業員データを取得
   useEffect(() => {
     loadStaff()
       .then(setStaff)
@@ -42,6 +62,7 @@ function StaffManagement({ onBack }) {
       .finally(() => setLoading(false))
   }, [])
 
+  // Escape キーで全モーダルを閉じる
   useEffect(() => {
     const onKeyDown = (e) => {
       if (e.key === 'Escape') {
