@@ -1,3 +1,22 @@
+/**
+ * メニュー管理画面（業務用途 - 管理者向け）
+ *
+ * メニュー商品の追加・編集・有効化/無効化・削除、
+ * およびタグの管理を行う画面。
+ *
+ * タブ構成:
+ *   active   → 有効商品一覧（営業中のメニュー）
+ *   inactive → 無効商品一覧（非表示にした商品。削除より無効化を推奨）
+ *   soldout  → 売切商品一覧（stock が 0 の有効商品）
+ *   tags     → タグ管理（タグの追加・削除）
+ *
+ * 商品のライフサイクル:
+ *   追加 → 有効(active) → [無効化] → 無効(inactive) → [再有効化 or 削除]
+ *
+ * タグの扱い:
+ *   タグはメニュー商品に付属して保存される。
+ *   タグを削除すると、そのタグを持つ全商品が自動更新される。
+ */
 import { useEffect, useMemo, useState } from 'react'
 import './MenuManagement.css'
 
@@ -13,33 +32,39 @@ import {
   removeTagLocally,
 } from '../../domain/menu/tagDb'
 
+// 価格をフォーマットするユーティリティ（例: 1000 → ¥1,000）
 const yen = (n) => `¥${Number(n || 0).toLocaleString('ja-JP')}`
 
 export default function MenuManagement({ onBack }) {
-  const [tab, setTab] = useState('active') // active | inactive | soldout | tags
-  const [menus, setMenus] = useState([])
-  const [tags, setTags] = useState([])
-  const [query, setQuery] = useState('')
+  // タブの選択状態（'active' | 'inactive' | 'soldout' | 'tags'）
+  const [tab, setTab] = useState('active')
+  const [menus, setMenus] = useState([])    // 全メニュー商品リスト
+  const [tags, setTags] = useState([])      // タグリスト
+  const [query, setQuery] = useState('')    // 検索ワード
   const [loading, setLoading] = useState(true)
 
+  // 商品追加/編集モーダルの状態
   const [open, setOpen] = useState(false)
-  const [mode, setMode] = useState('add')
+  const [mode, setMode] = useState('add')   // 'add' | 'edit'
   const [form, setForm] = useState({
-    id: null,
+    id: null,        // null = 新規（サーバーが採番）
     name: '',
     price: 0,
-    useStock: false,
+    useStock: false, // 残数管理を使うかどうか（false なら stock は null で送る）
     stock: '',
     active: true,
     tags: [],
   })
   const [error, setError] = useState('')
 
+  // 削除確認モーダルの対象商品（null = 非表示）
   const [deleteTarget, setDeleteTarget] = useState(null)
 
+  // タグ管理エリアの入力値とエラー
   const [tagInput, setTagInput] = useState('')
   const [tagError, setTagError] = useState('')
 
+  // メニューとタグを並行して取得（Promise.all で両方まとめて待つ）
   useEffect(() => {
     Promise.all([loadMenus(), loadTags()])
       .then(([m, t]) => {
@@ -50,10 +75,12 @@ export default function MenuManagement({ onBack }) {
       .finally(() => setLoading(false))
   }, [])
 
+  // 検索ワードで絞り込んだメニューリスト（タブへの振り分けはこれを元に行う）
   const filteredMenus = useMemo(() => {
     return searchMenus(menus, query)
   }, [menus, query])
 
+  // 有効商品を五十音順でソート（localeCompare の 'ja' オプションで日本語ソート）
   const activeMenus = useMemo(
     () => filteredMenus.filter((m) => m.active).sort((a, b) => a.name.localeCompare(b.name, 'ja')),
     [filteredMenus]
@@ -84,16 +111,18 @@ export default function MenuManagement({ onBack }) {
     setOpen(true)
   }
 
+  // 「編集」ボタン: 既存商品の情報を form に入れてモーダルを開く
+  // useStock: stock が null でなければ残数管理「する」に設定する
   const openEdit = (menu) => {
     setMode('edit')
     setForm({
-      id: menu.id,
-      name: menu.name,
-      price: Number(menu.price || 0),
+      id:       menu.id,
+      name:     menu.name,
+      price:    Number(menu.price || 0),
       useStock: menu.stock !== null,
-      stock: menu.stock === null ? '' : String(menu.stock),
-      active: !!menu.active,
-      tags: Array.isArray(menu.tags) ? menu.tags : [],
+      stock:    menu.stock === null ? '' : String(menu.stock),
+      active:   !!menu.active,
+      tags:     Array.isArray(menu.tags) ? menu.tags : [],
     })
     setError('')
     setOpen(true)
@@ -108,6 +137,7 @@ export default function MenuManagement({ onBack }) {
     return <section className="menuPage"><p style={{ padding: '2rem' }}>読み込み中…</p></section>
   }
 
+  // 価格を delta だけ増減する（0未満にはならない）
   const adjustPrice = (delta) => {
     setForm((prev) => ({
       ...prev,
@@ -115,11 +145,13 @@ export default function MenuManagement({ onBack }) {
     }))
   }
 
+  // フォームのタグリストに対してトグル操作を行う（追加 or 除外）
   const toggleTagOnForm = (tag) => {
     setForm((prev) => {
       const exists = prev.tags.includes(tag)
       return {
         ...prev,
+        // 既にあれば filter で除外、なければスプレッドで追加（イミュータブル）
         tags: exists
           ? prev.tags.filter((t) => t !== tag)
           : [...prev.tags, tag],
@@ -127,8 +159,17 @@ export default function MenuManagement({ onBack }) {
     })
   }
 
+  /**
+   * フォームの内容を検証してバックエンドに保存する
+   *
+   * 検証順序:
+   *   1. 商品名が空でないか
+   *   2. 価格が有効な非負数か
+   *   3. 残数管理「する」の場合、残数が有効な非負数か
+   * 全て通過したら API を呼ぶ（add: POST / edit: PUT）
+   */
   const save = async () => {
-    const name = String(form.name || '').trim()
+    const name  = String(form.name || '').trim()
     const price = Number(form.price)
 
     if (!name) {
@@ -141,6 +182,7 @@ export default function MenuManagement({ onBack }) {
       return
     }
 
+    // useStock が false なら stock は null（バックエンドが「管理なし」と解釈）
     let stockValue = null
     if (form.useStock) {
       const stockNum = Number(form.stock)
@@ -151,19 +193,15 @@ export default function MenuManagement({ onBack }) {
       stockValue = stockNum
     }
 
-    const payload = {
-      name,
-      price,
-      stock: stockValue,
-      active: !!form.active,
-      tags: form.tags,
-    }
+    const payload = { name, price, stock: stockValue, active: !!form.active, tags: form.tags }
 
     try {
       if (mode === 'add') {
+        // 新規作成: 返ってきた商品をリストの先頭に追加
         const created = await menuApi.create(payload)
         setMenus((prev) => [created, ...prev])
       } else {
+        // 編集: 対象IDの商品だけ置き換える（イミュータブル更新）
         const updated = await menuApi.update(form.id, { ...payload })
         setMenus((prev) => prev.map((m) => (m.id === updated.id ? updated : m)))
       }
@@ -173,6 +211,7 @@ export default function MenuManagement({ onBack }) {
     }
   }
 
+  // 有効商品を無効化する（削除ではなく active: false に更新）
   const disableMenu = async (menu) => {
     try {
       const updated = await menuApi.update(menu.id, { ...menu, active: false })
@@ -182,6 +221,7 @@ export default function MenuManagement({ onBack }) {
     }
   }
 
+  // 無効商品を再有効化する（active: true に更新）
   const enableMenu = async (menu) => {
     try {
       const updated = await menuApi.update(menu.id, { ...menu, active: true })
@@ -202,6 +242,7 @@ export default function MenuManagement({ onBack }) {
     setDeleteTarget(null)
   }
 
+  // タグを追加する（重複チェックは addTagLocally が担当）
   const handleAddTag = () => {
     const result = addTagLocally(tags, tagInput)
     if (!result.ok) {
@@ -213,10 +254,21 @@ export default function MenuManagement({ onBack }) {
     setTagError('')
   }
 
+  /**
+   * タグを削除する
+   *
+   * タグには独立した削除 API がないため、以下の手順で対応する:
+   *   1. ローカルのタグリストから即座に削除（画面上は消える）
+   *   2. そのタグを持つ全商品に対して PUT リクエストを送り、タグを除いて保存
+   *
+   * for...of で順番に処理している理由:
+   *   Promise.all で並列実行すると多数のリクエストが同時に飛ぶため、
+   *   サーバー負荷を考慮して順次処理している
+   */
   const handleRemoveTag = async (tag) => {
     // ローカルのタグリストから削除
     setTags((prev) => removeTagLocally(prev, tag))
-    // そのタグを持つ全メニュー商品を更新
+    // そのタグを持つ全メニュー商品を更新（タグを除いて保存）
     const affected = menus.filter((m) => (m.tags || []).includes(tag))
     for (const menu of affected) {
       const updated = { ...menu, tags: menu.tags.filter((t) => t !== tag) }
@@ -229,14 +281,11 @@ export default function MenuManagement({ onBack }) {
     }
   }
 
+  // 現在のタブに対応する商品リストを選択する（tags タブは別区画に描画するため空配列）
   const list =
-    tab === 'active'
-      ? activeMenus
-      : tab === 'inactive'
-      ? inactiveMenus
-      : tab === 'soldout'
-      ? soldOutMenus
-      : []
+    tab === 'active'   ? activeMenus   :
+    tab === 'inactive' ? inactiveMenus :
+    tab === 'soldout'  ? soldOutMenus  : []
 
   return (
     <section className="menuPage">
@@ -258,6 +307,7 @@ export default function MenuManagement({ onBack }) {
         </div>
       </div>
 
+      {/* タブ切り替え: active/inactive/soldout/tags */}
       <div className="tabs">
         <button className={tab === 'active' ? 'tab active' : 'tab'} type="button" onClick={() => setTab('active')}>
           有効一覧
@@ -273,6 +323,7 @@ export default function MenuManagement({ onBack }) {
         </button>
       </div>
 
+      {/* 検索ボックス: タグ一覧タブでは不要なため非表示 */}
       {tab !== 'tags' && (
         <input
           className="input"
@@ -282,6 +333,7 @@ export default function MenuManagement({ onBack }) {
         />
       )}
 
+      {/* 商品リスト（タグタブ以外） */}
       {tab !== 'tags' && (
         <div className="list">
           {list.map((m) => (
@@ -289,6 +341,7 @@ export default function MenuManagement({ onBack }) {
               <div className="main">
                 <div className="nameLine">
                   <span className="name">{m.name}</span>
+                  {/* タグを横並びでバッジ表示 */}
                   <div className="tags">
                     {(m.tags || []).map((t) => (
                       <span key={t} className="tag">{t}</span>
@@ -299,11 +352,13 @@ export default function MenuManagement({ onBack }) {
                 <div className="meta">
                   <span className="chip">{m.id}</span>
                   <span className="chip">{yen(m.price)}</span>
+                  {/* stock が null でないときのみ残数を表示（残数 0 は赤色） */}
                   {m.stock !== null && (
                     <span className={`chip ${Number(m.stock) === 0 ? 'dangerChip' : ''}`}>
                       残り {m.stock}
                     </span>
                   )}
+                  {/* isSoldOut(m): active かつ stock=0 のときに売切バッジを表示 */}
                   {isSoldOut(m) && <span className="badge">売切</span>}
                 </div>
               </div>
@@ -313,17 +368,20 @@ export default function MenuManagement({ onBack }) {
                   編集
                 </button>
 
+                {/* 有効一覧タブのみ「無効化」を表示（active: false に更新） */}
                 {tab === 'active' && (
                   <button className="btn small warn" type="button" onClick={() => disableMenu(m)}>
                     無効化
                   </button>
                 )}
 
+                {/* 無効一覧タブのみ「再有効化」と「削除」を表示 */}
                 {tab === 'inactive' && (
                   <>
                     <button className="btn small primary" type="button" onClick={() => enableMenu(m)}>
                       再有効化
                     </button>
+                    {/* 削除はsetDeleteTargetで確認モーダルを開く（直接削除しない） */}
                     <button className="btn small warn" type="button" onClick={() => setDeleteTarget(m)}>
                       削除
                     </button>
@@ -337,6 +395,7 @@ export default function MenuManagement({ onBack }) {
         </div>
       )}
 
+      {/* タグ管理タブ: タグの追加と削除 */}
       {tab === 'tags' && (
         <div className="tagManager">
           <div className="tagAddBox">
@@ -357,6 +416,7 @@ export default function MenuManagement({ onBack }) {
             {tags.map((tag) => (
               <div key={tag} className="tagRow">
                 <span className="tag">{tag}</span>
+                {/* タグ削除: ローカルリストから除去 + そのタグを持つ全商品も更新 */}
                 <button className="btn small warn" type="button" onClick={() => handleRemoveTag(tag)}>
                   削除
                 </button>

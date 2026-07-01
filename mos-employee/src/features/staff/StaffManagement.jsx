@@ -1,3 +1,19 @@
+/**
+ * 従業員管理画面（業務用途 - 店長専用）
+ *
+ * 従業員の追加・編集・有効化/無効化を行う画面。
+ * AdminHub から store されている（role === 'manager' のみアクセス可能）。
+ *
+ * 重要な設計方針（削除しない）:
+ *   従業員はシステム上から完全削除せず「無効化」で管理する。
+ *   理由: 過去の注文履歴に担当者情報が残るため。
+ *
+ * パスワード変更フロー:
+ *   1. 編集モーダルで「現在のパスワード + 新しいパスワード + 確認」を入力
+ *   2. save() が validate() でチェック
+ *   3. パスワード変更時は passwordConfirmTarget を設定して二重確認モーダルを表示
+ *   4. confirmPasswordChange() で commitSave() を実行
+ */
 import { useEffect, useMemo, useState } from 'react'
 import './StaffManagement.css'
 
@@ -13,28 +29,32 @@ import {
 } from '../../domain/staff/staffMapper'
 
 function StaffManagement({ onBack }) {
-  const [staff, setStaff] = useState([])
-  const [query, setQuery] = useState('')
-  const [filter, setFilter] = useState('active')
+  const [staff, setStaff] = useState([])         // 全従業員リスト
+  const [query, setQuery] = useState('')          // 検索ワード
+  const [filter, setFilter] = useState('active')  // 'all' | 'active' | 'inactive'
   const [loading, setLoading] = useState(true)
 
+  // 追加/編集モーダルの状態
   const [open, setOpen] = useState(false)
-  const [mode, setMode] = useState('add')
+  const [mode, setMode] = useState('add')  // 'add' | 'edit'
   const [form, setForm] = useState({
-    id: '',
-    name: '',
-    role: 'employee',
-    active: true,
-    currentPassword: '',
-    password: '',
+    id:             '',
+    name:           '',
+    role:           'employee',
+    active:         true,
+    currentPassword: '',   // 編集時のパスワード変更に必要（本人確認）
+    password:        '',   // 新しいパスワード（空文字 = 変更しない）
     passwordConfirm: '',
     allowedUseCases: ['hall', 'kitchen', 'admin'],
   })
   const [error, setError] = useState('')
 
+  // 有効化/無効化の確認モーダル対象（null = 非表示）
   const [confirmTarget, setConfirmTarget] = useState(null)
+  // パスワード変更の二重確認モーダル対象（null = 非表示）
   const [passwordConfirmTarget, setPasswordConfirmTarget] = useState(null)
 
+  // 初回マウント時に全従業員データを取得
   useEffect(() => {
     loadStaff()
       .then(setStaff)
@@ -42,6 +62,7 @@ function StaffManagement({ onBack }) {
       .finally(() => setLoading(false))
   }, [])
 
+  // Escape キーで全モーダルを閉じる
   useEffect(() => {
     const onKeyDown = (e) => {
       if (e.key === 'Escape') {
@@ -96,11 +117,13 @@ function StaffManagement({ onBack }) {
     setOpen(true)
   }
 
+  // 「編集」ボタン: 既存スタッフの情報を form に入れてモーダルを開く
+  // パスワードフィールドは空にしておく（変更しない場合は空のまま送る）
   const openEdit = (s) => {
     setMode('edit')
     setForm({
       ...s,
-      currentPassword: '',
+      currentPassword: '',  // セキュリティ上、現在のパスワードはフォームに入れない
       password: '',
       passwordConfirm: '',
     })
@@ -113,17 +136,22 @@ function StaffManagement({ onBack }) {
     setError('')
   }
 
+  /**
+   * 役職変更時に ID と allowedUseCases も自動更新する
+   *
+   * 新規追加（add）モード: 役職が変わったら ID のプレフィックスも変わるため採番し直す
+   * 編集（edit）モード: ID は固定のまま、allowedUseCases だけ役職に合わせて更新
+   */
   const handleRoleChange = (role) => {
     setForm((prev) => {
       if (mode === 'add') {
         return {
           ...prev,
           role,
-          id: generateIdByRole(role, staff),
+          id:              generateIdByRole(role, staff),
           allowedUseCases: getDefaultUseCasesFromRole(role),
         }
       }
-
       return {
         ...prev,
         role,
@@ -132,43 +160,58 @@ function StaffManagement({ onBack }) {
     })
   }
 
+  /**
+   * フォームの入力値を検証する
+   *
+   * 検証ルール:
+   *   共通: ID と名前が空でないか
+   *   新規追加: パスワードが必須、4文字以上、確認と一致
+   *   編集でパスワード変更: 現在のPW必須・正しいか確認、新PW 4文字以上、確認と一致
+   *   編集でパスワード変更なし: パスワード検証をスキップ
+   *
+   * @returns {string} エラーメッセージ（空文字 = 検証通過）
+   */
   const validate = () => {
-    const id = form.id.trim()
+    const id   = form.id.trim()
     const name = form.name.trim()
 
-    if (!id) return 'IDが空です'
+    if (!id)   return 'IDが空です'
     if (!name) return '名前を入力してください'
 
     if (mode === 'add') {
-      if (!form.password) return 'パスワードを入力してください'
-      if (form.password.length < 4) return 'パスワードは4文字以上にしてください'
-      if (form.password !== form.passwordConfirm) return '確認用パスワードが一致しません'
+      if (!form.password)                              return 'パスワードを入力してください'
+      if (form.password.length < 4)                   return 'パスワードは4文字以上にしてください'
+      if (form.password !== form.passwordConfirm)      return '確認用パスワードが一致しません'
     }
 
     if (mode === 'edit' && form.password) {
+      // パスワードを変更する場合のみ検証
       if (!form.currentPassword) return '現在のパスワードを入力してください'
 
       const currentStaff = staff.find((s) => s.id === form.id)
       if (!currentStaff) return '従業員情報が見つかりません'
 
+      // フロント側でも現在のパスワードが正しいかチェック（バックエンドでも検証する）
       if (currentStaff.password !== form.currentPassword) {
         return '現在のパスワードが違います'
       }
 
-      if (form.password.length < 4) return '新しいパスワードは4文字以上にしてください'
-      if (form.password !== form.passwordConfirm) return '確認用パスワードが一致しません'
+      if (form.password.length < 4)               return '新しいパスワードは4文字以上にしてください'
+      if (form.password !== form.passwordConfirm)  return '確認用パスワードが一致しません'
     }
 
-    return ''
+    return ''  // 全検証通過
   }
 
+  // API に送るペイロードを組み立てる
+  // 新規追加時は必ず active: true（開始直後から有効）
   const buildPayload = () => {
     return {
-      id: form.id.trim(),
-      name: form.name.trim(),
-      role: form.role,
-      active: mode === 'add' ? true : !!form.active,
-      password: form.password,
+      id:              form.id.trim(),
+      name:            form.name.trim(),
+      role:            form.role,
+      active:          mode === 'add' ? true : !!form.active,
+      password:        form.password,
       allowedUseCases: getDefaultUseCasesFromRole(form.role),
     }
   }
@@ -182,34 +225,46 @@ function StaffManagement({ onBack }) {
 
     const payload = buildPayload()
 
+    // パスワード変更を伴う編集の場合は二重確認モーダルを挟む
     if (mode === 'edit' && form.password) {
       setPasswordConfirmTarget({ payload })
       return
     }
 
+    // パスワード変更なし（または新規追加）はそのまま保存
     commitSave(payload)
   }
 
+  /**
+   * 実際に API を呼んで保存する
+   *
+   * allowedUseCases をカンマ区切り文字列で送る理由:
+   *   バックエンドの API が文字列形式で受け付けるため（DB保存形式に合わせている）
+   *   フロント側では配列で管理し、API 送信直前に join(',') で変換する
+   *
+   * password が空文字の場合 undefined にする理由:
+   *   バックエンドが undefined キーは無視するが、空文字は「パスワードを空にする」と解釈するため
+   */
   const commitSave = async (payload) => {
     try {
       if (mode === 'add') {
         const staffData = {
-          id: payload.id,
-          name: payload.name,
-          role: payload.role,
-          active: true,
-          password: payload.password,
+          id:              payload.id,
+          name:            payload.name,
+          role:            payload.role,
+          active:          true,
+          password:        payload.password,
           allowedUseCases: payload.allowedUseCases.join(','),
         }
         const created = await staffApi.create(staffData)
         setStaff((prev) => [{ ...created, allowedUseCases: created.allowedUseCases || payload.allowedUseCases }, ...prev])
       } else {
         const staffData = {
-          id: payload.id,
-          name: payload.name,
-          role: payload.role,
-          active: payload.active,
-          password: payload.password || undefined,
+          id:              payload.id,
+          name:            payload.name,
+          role:            payload.role,
+          active:          payload.active,
+          password:        payload.password || undefined,  // 空文字なら送らない
           allowedUseCases: payload.allowedUseCases.join(','),
         }
         const updated = await staffApi.update(payload.id, staffData)
@@ -220,19 +275,21 @@ function StaffManagement({ onBack }) {
     } catch (e) {
       console.error('従業員保存エラー:', e)
       setError('保存に失敗しました')
-      return
+      return  // ここで return してモーダルを閉じない（エラーを画面に表示する）
     }
 
     setPasswordConfirmTarget(null)
     closeModal()
   }
 
+  // 有効化/無効化ボタン: 確認モーダルを開く（誤操作防止）
   const requestToggleActive = (s) => {
     setConfirmTarget({ id: s.id, name: s.name, nextActive: !s.active })
   }
 
   const cancelToggle = () => setConfirmTarget(null)
 
+  // 有効化/無効化の確認モーダルで「OK」を押したときの処理
   const confirmToggle = async () => {
     if (!confirmTarget) return
     const { id, nextActive } = confirmTarget
@@ -259,6 +316,7 @@ function StaffManagement({ onBack }) {
 
   const cancelPasswordConfirm = () => setPasswordConfirmTarget(null)
 
+  // パスワード変更二重確認モーダルで「はい」を押したときに実際に保存する
   const confirmPasswordChange = () => {
     if (!passwordConfirmTarget) return
     commitSave(passwordConfirmTarget.payload)
@@ -318,8 +376,10 @@ function StaffManagement({ onBack }) {
         </div>
       </div>
 
+      {/* 従業員リスト: フィルタ・検索後の結果を表示 */}
       <div className="staffList">
         {filtered.map((s) => (
+          // 無効スタッフは 'inactive' クラスを追加してスタイルを暗くする
           <div key={s.id} className={`staffRow ${s.active ? '' : 'inactive'}`}>
             <div className="staffMain">
               <div className="staffName">{s.name}</div>
@@ -337,6 +397,7 @@ function StaffManagement({ onBack }) {
                 編集
               </button>
 
+              {/* 有効なら「無効化」ボタン、無効なら「有効化」ボタンを表示 */}
               <button
                 className={`btn small ${s.active ? 'warn' : 'primary'}`}
                 type="button"
@@ -355,8 +416,10 @@ function StaffManagement({ onBack }) {
         )}
       </div>
 
+      {/* 追加・編集モーダル */}
       {open && (
         <>
+          {/* オーバーレイをクリックで閉じる */}
           <div className="overlay" onClick={closeModal} />
           <div className="modal" role="dialog" aria-modal="true">
             <div className="modalTitle">
@@ -376,6 +439,7 @@ function StaffManagement({ onBack }) {
 
               <label className="label">
                 役職
+                {/* handleRoleChange が ID と allowedUseCases も同時に更新する */}
                 <select
                   className="input"
                   value={form.role}
@@ -391,9 +455,11 @@ function StaffManagement({ onBack }) {
 
               <label className="label">
                 従業員ID
+                {/* ID は自動採番のため disabled（手動入力不可） */}
                 <input className="input" value={form.id} disabled />
               </label>
 
+              {/* 有効/無効の切り替えは編集モードのみ（追加時は常に有効） */}
               {mode === 'edit' && (
                 <label className="label row">
                   状態
@@ -416,6 +482,7 @@ function StaffManagement({ onBack }) {
                 </label>
               )}
 
+              {/* 新規追加時のパスワード入力 */}
               {mode === 'add' && (
                 <>
                   <label className="label">
@@ -442,6 +509,7 @@ function StaffManagement({ onBack }) {
                 </>
               )}
 
+              {/* 編集時のパスワード変更フォーム（全フィールド空欄 = 変更しない） */}
               {mode === 'edit' && (
                 <>
                   <label className="label">
@@ -483,6 +551,7 @@ function StaffManagement({ onBack }) {
                 </>
               )}
 
+              {/* バリデーションエラーメッセージ */}
               {error && <div className="error">{error}</div>}
             </div>
 
@@ -498,6 +567,7 @@ function StaffManagement({ onBack }) {
         </>
       )}
 
+      {/* 有効化/無効化 確認モーダル */}
       {confirmTarget && (
         <>
           <div className="overlay" onClick={cancelToggle} />
@@ -525,6 +595,7 @@ function StaffManagement({ onBack }) {
         </>
       )}
 
+      {/* パスワード変更 二重確認モーダル（誤操作防止） */}
       {passwordConfirmTarget && (
         <>
           <div className="overlay" onClick={cancelPasswordConfirm} />
