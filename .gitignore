@@ -1,2 +1,3 @@
 mos_backend/.env
 node_modules/
+mos_backend/src/main/resources/application.properties
