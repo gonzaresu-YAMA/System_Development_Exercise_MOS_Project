@@ -11,6 +11,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 /**
  * セキュリティ設定クラス
+ * SpringのDIコンテナから、インスタンスを注入するためのAutoWiredを定義
+ * SpringSecurity等のセキュリティフィルターで利用するBeanを定義
  */
 @Configuration
 @EnableWebSecurity

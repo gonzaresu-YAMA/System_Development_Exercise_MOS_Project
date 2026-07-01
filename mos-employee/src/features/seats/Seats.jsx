@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
+
+import { QRCodeSVG } from 'qrcode.react'
+
 import './Seats.css'
 
 import {
@@ -117,11 +120,26 @@ function Seats() {
     setDropOpen(false)
   }
 
+  // 席選択後
   const confirmOK = () => {
     if (!confirm) return
     const { mode, seat } = confirm
 
     if (mode === 'start') {
+      // バックエンドAPIを叩き、サーバ側で暗号化・期限設定された値を取得
+
+      // 一旦フロントエンドで実装
+      const expireTime = Date.now() + 5 * 60 * 1000 // 5分間の期限
+      const dummyQRData = JSON.stringify({
+        seatId:seat.id,
+        status:SEAT_STATUS.using,
+        exp:expireTime  // 有効期限タイムスタンプ
+      })
+
+      // 状態にQRコードのデータをセット
+      setActiveQrValue(dummyQrData)
+      setQrCountdown(300) // 5分 = 300秒のカウントダウン開始
+
       updateSeat({ ...seat, status: SEAT_STATUS.using })
       setToast(`${seat.id} のQRコードを発行しました`)
     }
@@ -139,6 +157,7 @@ function Seats() {
     updateSeat({ ...seat, status: SEAT_STATUS.empty, people: 0 })
   }
 
+  // QRコード再生成
   const reissueQR = (seat) => {
     setToast(`${seat.id} のQRコードを再発行しました`)
   }
