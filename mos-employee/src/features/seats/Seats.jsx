@@ -216,7 +216,7 @@ function Seats() {
       <div className="seatsHeader">
         <div className="seatsHeaderLeft">
           <button className="floorBackBtn" onClick={backToFloorSelect} type="button">
-            ← 戻る
+            戻る
           </button>
           <h2 className="seatsTitle">座席管理</h2>
         </div>
