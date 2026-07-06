@@ -44,14 +44,27 @@ public class SeatService {
     }
 
     /**
-     * QRコードで座席を特定する
+     * QRコードで座席を特定する（顧客がQRコードを読み取った瞬間に呼ばれる）
      * 有効期限切れのQRコードは無効として扱う（見つからなかったものとして返す）
+     *
+     * 読み取りに成功した場合:
+     *   - session_started_at が未設定なら、このタイミング（読み取った瞬間）を開始時刻として設定する
+     *   - customer_count を1加算する（読み取るたびに人数をカウントする）
      */
-    @Transactional(readOnly = true)
     public Optional<Seat> getSeatByQrCode(String qrCode) {
-        return seatRepository.findByQrCode(qrCode)
+        Optional<Seat> seatOpt = seatRepository.findByQrCode(qrCode)
                 .filter(seat -> seat.getQrExpiresAt() != null
                         && seat.getQrExpiresAt().isAfter(LocalDateTime.now()));
+
+        seatOpt.ifPresent(seat -> {
+            if (seat.getSessionStartedAt() == null) {
+                seat.setSessionStartedAt(LocalDateTime.now());
+            }
+            seat.setCustomerCount(seat.getCustomerCount() + 1);
+            seatRepository.save(seat);
+        });
+
+        return seatOpt;
     }
 
     /**
@@ -72,6 +85,10 @@ public class SeatService {
         seat.setStatus(newStatus);
         if (customerCount != null) {
             seat.setCustomerCount(customerCount);
+        }
+        // 会計処理が完了したら、次の来店に備えてセッション開始時刻をリセットする
+        if (newStatus == Seat.Status.PAID) {
+            seat.setSessionStartedAt(null);
         }
         return seatRepository.save(seat);
     }
