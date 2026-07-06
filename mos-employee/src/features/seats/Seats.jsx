@@ -235,7 +235,7 @@ function Seats() {
 
       <div className="seatList">
         {filteredSeats.map((seat) => (
-          <button
+          <div
             key={seat.id}
             className="seatCard"
             onClick={() => handleSeatTap(seat)}
@@ -275,7 +275,7 @@ function Seats() {
                 </button>
               )}
             </div>
-          </button>
+          </div>
         ))}
 
         {filteredSeats.length === 0 && <div className="seatEmpty">該当する座席がありません。</div>}
