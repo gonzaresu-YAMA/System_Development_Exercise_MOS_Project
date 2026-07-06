@@ -109,6 +109,9 @@ ALTER TABLE menu_items ADD COLUMN IF NOT EXISTS tags                VARCHAR(500)
 ALTER TABLE menu_items ADD COLUMN IF NOT EXISTS sort_order          INT          NOT NULL DEFAULT 0;
 ALTER TABLE menu_items ADD COLUMN IF NOT EXISTS updated_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
+-- seats テーブルへのカラム追加マイグレーション（QRコード有効期限）
+ALTER TABLE seats ADD COLUMN IF NOT EXISTS qr_expires_at TIMESTAMP;
+
 -- 従業員
 CREATE TABLE IF NOT EXISTS staff (
     id                 VARCHAR(20)  NOT NULL PRIMARY KEY,
