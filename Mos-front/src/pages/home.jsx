@@ -33,6 +33,12 @@ export default function Home() {
   // 直前に処理したcodeを記録し、同じcodeに対する二重リクエストを防ぐ
   // （React.StrictModeの開発モードではuseEffectが2回実行されるため、ガードがないと
   //   customer_countが1回のスキャンで2回加算されてしまう）
+  //
+  // 注意: 「アンマウント時にPromiseの結果を破棄する」型のガード（activeフラグ）は
+  // ここでは使わない。StrictModeはこのrefを保持したまま1回目のeffectをクリーンアップ→
+  // 2回目のeffectを実行するため、activeフラグと組み合わせると「実際に発火したFetch
+  // （1回目）の結果は握りつぶされ、2回目はrefガードで発火すらしない」という詰みが発生し、
+  // sessionStorageへの保存とnavigateが永久に実行されなくなる。
   const processedCodeRef = useRef(null)
 
   useEffect(() => {
@@ -40,22 +46,18 @@ export default function Home() {
     if (!code || processedCodeRef.current === code) return
     processedCodeRef.current = code
 
-    let active = true
     setQrStatus('checking')
 
     seatApi.getSeatByQrCode(code)
       .then((seat) => {
-        if (!active) return
         // 座席が特定できたら sessionStorage に保存し、注文フローへ自動的に進む
         sessionStorage.setItem('seatId', String(seat.id))
         navigate('/course', { replace: true })
       })
       .catch((e) => {
         console.error('QRコードによる座席特定エラー:', e)
-        if (active) setQrStatus('error')
+        setQrStatus('error')
       })
-
-    return () => { active = false }
   }, [searchParams, navigate])
 
   return (
