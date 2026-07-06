@@ -48,6 +48,10 @@ public class Seat {
     @Column(name = "qr_code", length = 200)
     private String qrCode;
 
+    /** QRコードの有効期限 */
+    @Column(name = "qr_expires_at")
+    private LocalDateTime qrExpiresAt;
+
     /** セッションスタート日時 */
     @Column(name = "session_started_at")
     private LocalDateTime sessionStartedAt;
@@ -93,6 +97,9 @@ public class Seat {
 
     public String getQrCode() { return qrCode; }
     public void setQrCode(String qrCode) { this.qrCode = qrCode; }
+
+    public LocalDateTime getQrExpiresAt() { return qrExpiresAt; }
+    public void setQrExpiresAt(LocalDateTime qrExpiresAt) { this.qrExpiresAt = qrExpiresAt; }
 
     public LocalDateTime getSessionStartedAt() { return sessionStartedAt; }
     public void setSessionStartedAt(LocalDateTime sessionStartedAt) { this.sessionStartedAt = sessionStartedAt; }

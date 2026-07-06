@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS seats (
     status             VARCHAR(20)  NOT NULL DEFAULT 'EMPTY',
     customer_count     INT          NOT NULL DEFAULT 0,
     qr_code            VARCHAR(200),
+    qr_expires_at      TIMESTAMP,
     session_started_at TIMESTAMP,
     created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP

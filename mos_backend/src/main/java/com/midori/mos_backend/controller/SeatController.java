@@ -49,6 +49,12 @@ public class SeatController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // 座席のQRコードを新規発行（再発行）する。都度サーバー側でトークンと有効期限を生成する
+    @PostMapping("/{id}/qr")
+    public ResponseEntity<Seat> issueQrCode(@PathVariable Long id) {
+        return ResponseEntity.ok(seatService.issueQrCode(id));
+    }
+
     @PatchMapping("/{id}/status")
     public ResponseEntity<Seat> updateStatus(
             @PathVariable Long id,

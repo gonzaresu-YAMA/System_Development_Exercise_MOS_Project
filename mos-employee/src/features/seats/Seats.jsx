@@ -126,27 +126,27 @@ function Seats() {
   }
 
   // 席選択後
-  const confirmOK = () => {
+  const confirmOK = async () => {
     if (!confirm) return
     const { mode, seat } = confirm
 
     if (mode === 'start') {
-      // バックエンドAPIを叩き、サーバ側で暗号化・期限設定された値を取得
-
-      // 一旦フロントエンドで実装
-      const expireTime = Date.now() + 5 * 60 * 1000 // 5分間の期限
-      const dummyQRData = JSON.stringify({
-        seatId:seat.id,
-        status:SEAT_STATUS.using,
-        exp:expireTime  // 有効期限タイムスタンプ
-      })
-
-      // 状態にQRコードのデータをセット
-      setActiveQrValue(dummyQRData)
-      setQrCountdown(300) // 5分 = 300秒のカウントダウン開始
+      // バックエンドでトークンと有効期限を発行してもらう
+      try {
+        const issued = await seatApi.issueQr(seat._numId)
+        const remainingSec = Math.max(
+          0,
+          Math.round((new Date(issued.qrExpiresAt).getTime() - Date.now()) / 1000)
+        )
+        setActiveQrValue(issued.qrCode)
+        setQrCountdown(remainingSec)
+        setToast(`${seat.id} のQRコードを発行しました`)
+      } catch (e) {
+        console.error('QR発行エラー:', e)
+        setToast('QRコードの発行に失敗しました')
+      }
 
       updateSeat({ ...seat, status: SEAT_STATUS.using })
-      setToast(`${seat.id} のQRコードを発行しました`)
     }
 
     if (mode === 'pay') {
@@ -162,11 +162,21 @@ function Seats() {
     updateSeat({ ...seat, status: SEAT_STATUS.empty, people: 0 })
   }
 
-  // QRコードをセット
-
-  // QRコード再生成
-  const reissueQR = (seat) => {
-    setToast(`${seat.id} のQRコードを再発行しました`)
+  // QRコード再発行（バックエンドで新しいトークンと有効期限を発行してもらう）
+  const reissueQR = async (seat) => {
+    try {
+      const issued = await seatApi.issueQr(seat._numId)
+      const remainingSec = Math.max(
+        0,
+        Math.round((new Date(issued.qrExpiresAt).getTime() - Date.now()) / 1000)
+      )
+      setActiveQrValue(issued.qrCode)
+      setQrCountdown(remainingSec)
+      setToast(`${seat.id} のQRコードを再発行しました`)
+    } catch (e) {
+      console.error('QR再発行エラー:', e)
+      setToast('QRコードの再発行に失敗しました')
+    }
   }
 
   const backToFloorSelect = () => {

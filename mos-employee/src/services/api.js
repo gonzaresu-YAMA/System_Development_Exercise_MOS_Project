@@ -130,11 +130,13 @@ export function toFrontOrder(order) {
  */
 export function toFrontSeat(seat) {
   return {
-    _numId:  seat.id,
-    id:      seat.seatNumber,
-    status:  toFrontSeatStatus(seat.status),
-    people:  seat.customerCount ?? 0,
-    floor:   seat.floor ?? 1,
+    _numId:       seat.id,
+    id:           seat.seatNumber,
+    status:       toFrontSeatStatus(seat.status),
+    people:       seat.customerCount ?? 0,
+    floor:        seat.floor ?? 1,
+    qrCode:       seat.qrCode ?? null,
+    qrExpiresAt:  seat.qrExpiresAt ?? null,
   }
 }
 
@@ -247,4 +249,8 @@ export const seatApi = {
       status: toBackendSeatStatus(frontStatus),
       customerCount,
     }).then((r) => toFrontSeat(r.data)),
+
+  // QRコードを新規発行（再発行）する。トークンと有効期限はサーバー側で生成される
+  issueQr: (numId) =>
+    api.post(`/api/seats/${numId}/qr`).then((r) => toFrontSeat(r.data)),
 }
