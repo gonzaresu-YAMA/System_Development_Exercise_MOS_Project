@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @Transactional
@@ -36,6 +37,9 @@ public class OrderService {
     public Order createOrder(OrderRequest request) {
         Order order = new Order();
         order.setCourseType(request.getCourseType());
+        order.setCustomerId(generateCustomerId());
+        // 注文作成時点では「受付中」。レジで会計されると updateBillStatusForPos で更新される
+        order.setBillStatus(Order.BILL_STATUS_OPEN);
 
         if (request.getSeatId() != null) {
             Seat seat = seatRepository.findById(request.getSeatId()).orElse(null);
@@ -64,6 +68,20 @@ public class OrderService {
 
         order.setTotalAmount(total);
         return orderRepository.save(order);
+    }
+
+    /**
+     * 未使用の7桁客番号を生成する
+     * "0000001"〜"9999999" の範囲。既存と衝突したら生成し直す（最大10回）
+     */
+    private String generateCustomerId() {
+        for (int attempt = 0; attempt < 10; attempt++) {
+            String candidate = String.format("%07d", ThreadLocalRandom.current().nextInt(1, 10_000_000));
+            if (!orderRepository.existsByCustomerId(candidate)) {
+                return candidate;
+            }
+        }
+        throw new IllegalStateException("客番号の発行に失敗しました（重複多発）。");
     }
 
     @Transactional(readOnly = true)
