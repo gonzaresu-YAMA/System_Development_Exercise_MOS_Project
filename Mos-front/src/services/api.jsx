@@ -108,7 +108,15 @@ export const menuApi = {
    * @param {number} max - 最高価格
    */
   getItemsByPriceRange: (min, max) =>
-    api.get('/api/menu/items', { params: { minPrice: min, maxPrice: max } }).then((r) => r.data)
+    api.get('/api/menu/items', { params: { minPrice: min, maxPrice: max } }).then((r) => r.data),
+
+  /**
+   * 無効化かどうかを取得する
+   * 
+   * @param {number} active - 売り切れフラグ
+   */
+  getItemActive:(active) =>   
+    api.get('/api/menu/items/${id}',{params: {soldOut:active}}).then((r) => r.data) 
 }
 
 // ── Order API ─────────────────────────────────────────────────

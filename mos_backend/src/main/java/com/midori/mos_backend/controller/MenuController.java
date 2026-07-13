@@ -66,6 +66,11 @@ public class MenuController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // @GetMapping("/items/{id}")
+    // public boolean getItemActive(@PathVariable Long id){
+    //     return menuService.get;
+    // }
+
     // ── メニュー商品（書き込み）───────────────────────────
 
     @PostMapping("/items")
