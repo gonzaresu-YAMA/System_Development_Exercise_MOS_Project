@@ -45,6 +45,8 @@ CREATE TABLE IF NOT EXISTS orders (
     status       VARCHAR(20)  NOT NULL DEFAULT 'PENDING',
     total_amount INT          NOT NULL DEFAULT 0,
     course_type  VARCHAR(50),
+    customer_id  VARCHAR(7),
+    bill_status  INT          NOT NULL DEFAULT 1,
     created_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     ordered_at   TIMESTAMP,

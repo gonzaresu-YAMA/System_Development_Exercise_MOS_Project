@@ -112,6 +112,10 @@ ALTER TABLE menu_items ADD COLUMN IF NOT EXISTS updated_at          TIMESTAMP   
 -- seats テーブルへのカラム追加マイグレーション（QRコード有効期限）
 ALTER TABLE seats ADD COLUMN IF NOT EXISTS qr_expires_at TIMESTAMP;
 
+-- orders テーブルへのカラム追加マイグレーション（レジ（POS）連携用の客番号・会計状況）
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_id VARCHAR(7);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS bill_status INT NOT NULL DEFAULT 1;
+
 -- 従業員
 CREATE TABLE IF NOT EXISTS staff (
     id                 VARCHAR(20)  NOT NULL PRIMARY KEY,
