@@ -229,7 +229,7 @@ export default function AppShell() {
  * 3カラム構成:
  *   左: 戻るボタン（showBackButton が true のときのみ表示）
  *   中: 店舗名 + 現在の画面名
- *   右: 「用途変更」ボタン（用途選択後のみ）+ 「ログアウト」ボタン
+ *   右: 「ホーム」ボタン（用途選択後のみ）+ 「ログアウト」ボタン
  */
 function ShellHeader({
   title,
@@ -243,14 +243,20 @@ function ShellHeader({
     <header className="shellHeader">
       <div className="shellHeaderRow">
         <div className="shellHeaderLeft">
-          {showBackButton ? (
+          {/* ホームボタン: 用途選択中（useCaseState が null）のときは非表示 */}
+          {onChangeUseCase && (
+            <button className="appBtn appBtnGhost" type="button" onClick={onChangeUseCase}>
+              ホーム
+            </button>
+          )}
+          {/* {showBackButton ? (
             <button className="appBtn appBtnGhost" type="button" onClick={onBack}>
               ← 戻る
             </button>
           ) : (
             // 戻るボタンがないときも中央のタイトルが中央に来るようスペースを確保
             <div className="shellHeaderGap" />
-          )}
+          )} */}
         </div>
 
         <div className="shellHeaderCenter">
@@ -259,12 +265,6 @@ function ShellHeader({
         </div>
 
         <div className="shellHeaderRight">
-          {/* 用途変更ボタン: 用途選択中（useCaseState が null）のときは非表示 */}
-          {onChangeUseCase && (
-            <button className="appBtn appBtnGhost" type="button" onClick={onChangeUseCase}>
-              用途変更
-            </button>
-          )}
           <button className="appBtn appBtnWarn" type="button" onClick={onLogout}>
             ログアウト
           </button>

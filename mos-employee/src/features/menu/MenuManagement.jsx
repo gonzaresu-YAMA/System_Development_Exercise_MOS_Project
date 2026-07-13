@@ -291,14 +291,15 @@ export default function MenuManagement({ onBack }) {
     <section className="menuPage">
       <div className="menuHeader">
         <div>
+          <button className="btn ghost" type="button" onClick={onBack}>
+            戻る
+          </button>
           <h2 className="menuTitle">メニュー管理</h2>
           <div className="menuSub">商品管理 / 在庫管理 / タグ管理</div>
         </div>
 
         <div className="menuHeaderActions">
-          <button className="btn ghost" type="button" onClick={onBack}>
-            戻る
-          </button>
+
           {tab !== 'tags' && (
             <button className="btn primary" type="button" onClick={openAdd}>
               ＋ 追加

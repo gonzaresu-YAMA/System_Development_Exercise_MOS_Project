@@ -224,7 +224,7 @@ function Seats() {
       <div className="seatsHeader">
         <div className="seatsHeaderLeft">
           <button className="floorBackBtn" onClick={backToFloorSelect} type="button">
-            ← 戻る
+            戻る
           </button>
           <h2 className="seatsTitle">座席管理</h2>
         </div>
@@ -253,7 +253,7 @@ function Seats() {
 
       <div className="seatList">
         {filteredSeats.map((seat) => (
-          <button
+          <div
             key={seat.id}
             className="seatCard"
             onClick={() => handleSeatTap(seat)}
@@ -293,7 +293,7 @@ function Seats() {
                 </button>
               )}
             </div>
-          </button>
+          </div>
         ))}
 
         {filteredSeats.length === 0 && <div className="seatEmpty">該当する座席がありません。</div>}
