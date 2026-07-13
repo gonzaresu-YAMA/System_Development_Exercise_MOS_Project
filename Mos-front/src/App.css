@@ -384,6 +384,26 @@
   animation: fadeInUp 0.3s ease;
 }
 
+/* お会計番号（客番号）ラベル */
+.toast-customer-label {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--cream-dim);
+  letter-spacing: 0.1em;
+}
+
+/* お会計番号（客番号）の数字本体 */
+.toast-customer-id {
+  display: inline-block;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  /* 等幅で桁を揃える。末尾のletter-spacing分を相殺するため左に余白 */
+  font-variant-numeric: tabular-nums;
+  padding-left: 0.28em;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
