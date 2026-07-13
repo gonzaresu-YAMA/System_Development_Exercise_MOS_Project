@@ -29,7 +29,7 @@ import '../App.css'
 import '../menu.css'
 
 export default function OrderSendPage() {
-  const { cartItems, confirmOrder, orderHistory } = useContext(CartContext)
+  const { cartItems, confirmOrder, orderHistory, lastCustomerId } = useContext(CartContext)
   const navigate = useNavigate()
 
   // isSent: 注文が送信完了したかどうか（true のとき「承りました」Toast を表示）
@@ -52,14 +52,16 @@ export default function OrderSendPage() {
     if (cartItems.length === 0 && !isSent) navigate('/menu')
   }, [cartItems, isSent, navigate])
 
-  // ── 注文送信後、2.3秒後にメニューへ自動遷移 ─────────────────
+  // ── 注文送信後、一定時間後にメニューへ自動遷移 ─────────────────
+  // 客番号が表示される場合は、お客様が番号を控える時間を確保するため長めにする
   useEffect(() => {
     if (!isSent) return
+    const delay = lastCustomerId ? 6000 : 2300
     // setTimeout: 指定ミリ秒後に一度だけ関数を実行する
-    const id = setTimeout(() => navigate('/menu'), 2300)
+    const id = setTimeout(() => navigate('/menu'), delay)
     // クリーンアップ: コンポーネントが破棄された場合はタイマーを止める
     return () => clearTimeout(id)
-  }, [isSent, navigate])
+  }, [isSent, navigate, lastCustomerId])
 
   // ── カートが空になったら警告もリセット ───────────────────────
   useEffect(() => {
@@ -209,6 +211,15 @@ export default function OrderSendPage() {
         <div className="toast-overlay" role="status" aria-live="polite">
           <div className="toast-card">
             ご注文を承りました
+            {/* 客番号: お会計時にレジで伝えていただく7桁の番号 */}
+            {lastCustomerId && (
+              <>
+                <br />
+                <span className="toast-customer-label">お会計番号</span>
+                <br />
+                <span className="toast-customer-id">{lastCustomerId}</span>
+              </>
+            )}
             <br />
             メニュー画面へ戻ります
           </div>
