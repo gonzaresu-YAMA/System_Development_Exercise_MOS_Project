@@ -18,6 +18,8 @@ public interface MenuItemRepository extends JpaRepository<MenuItem, Long> {
 
     List<MenuItem> findBySoldOutFalseOrderBySortOrderAsc();
 
+    List<MenuItem> findByCategoryNameAndActiveTrueOrderBySortOrderAsc(String categoryName);
+
     List<MenuItem> findByNameContainingIgnoreCase(String keyword);
 
     List<MenuItem> findByPriceBetween(int minPrice, int maxPrice);

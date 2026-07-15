@@ -29,10 +29,23 @@ public class MenuService {
         return categoryRepository.findAllByOrderBySortOrderAsc();
     }
 
+    /**
+     * 顧客 : カテゴリ別商品一覧
+     * 
+     * 無効化(active=false)された商品は表示自体から除外
+     * (売り切れ商品は含める soldOut=trueとして画面側で「売り切れ」表示・注文不可にする)
+     * 
+     * @param categoryName
+     * @return
+     */
     public List<MenuItem> getItemsByCategory(String categoryName) {
         return menuItemRepository.findByCategoryNameOrderBySortOrderAsc(categoryName);
     }
 
+    /**
+     * 顧客 : 有効かつ在庫ありの商品のみ
+     * @return
+     */
     public List<MenuItem> getAllAvailableItems() {
         return menuItemRepository.findBySoldOutFalseOrderBySortOrderAsc();
     }
@@ -91,8 +104,10 @@ public class MenuService {
         item.setPrice(req.getPrice());
         item.setStock(req.getStock());
         item.setActive(req.isActive());
-        // stock が 0 なら売り切れ扱い
-        item.setSoldOut(req.getStock() != null && req.getStock() == 0);
+        // 売り切れ判定 : 「無効化されている」または「在庫数が0」なら売り切れ
+        // → 無効化した瞬間に soldOut=true、再有効化した瞬間に（残数が0でなければ）soldOut=false になる
+        boolean outOfStock = req.getStock() != null && req.getStock() == 0;
+        item.setSoldOut(!req.isActive() || outOfStock);
 
         List<String> tags = req.getTags();
         item.setTags(tags != null ? String.join(",", tags) : "");
