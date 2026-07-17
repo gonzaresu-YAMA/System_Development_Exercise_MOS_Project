@@ -257,7 +257,7 @@ export default function CategoryMenu() {
         flipLock.current = false // ロック解除
       }, 220)
     }, 220) // exit アニメーション時間と同じ（CSS animation-duration と合わせる）
-  }, [pageIndex])
+  }, [pageIndex, categories.length])
 
   // ── タッチ・スワイプ操作 ──────────────────────────────────────
 
