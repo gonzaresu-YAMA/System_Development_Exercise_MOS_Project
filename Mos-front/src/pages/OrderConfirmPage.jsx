@@ -21,7 +21,7 @@ import { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import { MenuLayout } from '../components/MenuLayout'
 import { CartContext } from '../contexts/CartContext'
-import menuItems from '../data/menuItems'
+import menuImages from '../data/menuImages'
 import useStayRemaining from '../hooks/useStayRemaining'
 import '../App.css'
 import '../menu.css'
@@ -32,15 +32,14 @@ export default function OrderConfirmPage() {
 
   /**
    * カートアイテムの画像を取得するフォールバック関数
-   * カートアイテムに image が入っていない場合、menuItems から探して返す
+   * カートアイテムに image が入っていない場合、menuImages（ID→画像マップ）から探して返す
    *
    * @param {{ id: number, name: string, image?: string }} item
    * @returns {string} 画像の URL（なければ空文字列）
    */
   const getFallbackImage = (item) => {
     if (item.image) return item.image
-    const found = menuItems.find((m) => String(m.id) === String(item.id) || m.name === item.name)
-    return found?.image || '' // ?. はオプショナルチェーン: found が undefined でもエラーにならない
+    return menuImages[item.id] || ''
   }
 
   /**
