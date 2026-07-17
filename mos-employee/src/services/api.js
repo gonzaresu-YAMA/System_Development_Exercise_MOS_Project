@@ -91,6 +91,7 @@ export function toFrontMenuItem(item) {
     active:     item.active ?? true,
     tags:       item.tags ? item.tags.split(',').map((t) => t.trim()).filter(Boolean) : [],
     categoryId: item.category?.id ?? null,
+    imageUrl:   item.imageUrl ?? '',
   }
 }
 
@@ -186,6 +187,10 @@ export const menuApi = {
   getAll: () =>
     api.get('/api/menu/items', { params: { all: true } }).then((r) => r.data.map(toFrontMenuItem)),
 
+  // カテゴリ一覧取得（商品の追加・編集フォームでの選択肢に使う）
+  getCategories: () =>
+    api.get('/api/menu/categories').then((r) => r.data),
+
   // タグ一覧取得
   getTags: () =>
     api.get('/api/menu/tags').then((r) => r.data),
@@ -212,6 +217,7 @@ function toBackendMenuItemRequest(item) {
     active:     item.active,
     tags:       item.tags || [],
     categoryId: item.categoryId ?? null,
+    imageUrl:   item.imageUrl || null,
   }
 }
 
