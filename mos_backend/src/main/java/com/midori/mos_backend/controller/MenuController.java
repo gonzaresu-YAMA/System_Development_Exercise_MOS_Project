@@ -4,6 +4,8 @@ import com.midori.mos_backend.Entity.Category;
 import com.midori.mos_backend.Entity.MenuItem;
 import com.midori.mos_backend.dto.MenuItemRequest;
 import com.midori.mos_backend.service.MenuService;
+
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,16 +44,24 @@ public class MenuController {
             @RequestParam(required = false) Integer maxPrice,
             @RequestParam(required = false, defaultValue = "false") boolean all
     ) {
+        List<MenuItem> result;
         if (all) {
-            return ResponseEntity.ok(menuService.getAllItems());
+            result = menuService.getAllItems();
         }
-        if (category != null) {
-            return ResponseEntity.ok(menuService.getItemsByCategory(category));
+        else if (category != null) {
+            result = menuService.getItemsByCategory(category);
         }
-        if (minPrice != null && maxPrice != null) {
-            return ResponseEntity.ok(menuService.getItemsByPriceRange(minPrice, maxPrice));
+        else if (minPrice != null && maxPrice != null) {
+            result = menuService.getItemsByPriceRange(minPrice,maxPrice);
         }
-        return ResponseEntity.ok(menuService.getAllAvailableItems());
+        else
+        {
+            result = menuService.getAllAvailableItems();
+        }
+        // 在庫・価格・売り切れ状態は頻繫に変わるため、ブラウザ/プロキシに一切キャッシュされない
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(result);
     }
 
     @GetMapping("/items/search")
