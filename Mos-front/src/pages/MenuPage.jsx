@@ -18,7 +18,6 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import { MenuLayout } from '../components/MenuLayout'
 import { menuApi } from '../services/api'
-// import menuItems from '../data/menuItems'
 import useStayRemaining from '../hooks/useStayRemaining'
 import '../App.css'
 import '../menu.css'
