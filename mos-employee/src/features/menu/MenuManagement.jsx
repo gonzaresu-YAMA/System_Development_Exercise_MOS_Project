@@ -40,6 +40,7 @@ export default function MenuManagement({ onBack }) {
   const [tab, setTab] = useState('active')
   const [menus, setMenus] = useState([])    // 全メニュー商品リスト
   const [tags, setTags] = useState([])      // タグリスト
+  const [categories, setCategories] = useState([]) // カテゴリ一覧（客側の表示先）
   const [query, setQuery] = useState('')    // 検索ワード
   const [loading, setLoading] = useState(true)
 
@@ -54,6 +55,8 @@ export default function MenuManagement({ onBack }) {
     stock: '',
     active: true,
     tags: [],
+    categoryId: null, // 客側メニューでどのカテゴリページに表示するか
+    imageUrl: '',      // 客側メニューに表示する商品画像のURL
   })
   const [error, setError] = useState('')
 
@@ -64,12 +67,13 @@ export default function MenuManagement({ onBack }) {
   const [tagInput, setTagInput] = useState('')
   const [tagError, setTagError] = useState('')
 
-  // メニューとタグを並行して取得（Promise.all で両方まとめて待つ）
+  // メニュー・タグ・カテゴリを並行して取得（Promise.all で3つまとめて待つ）
   useEffect(() => {
-    Promise.all([loadMenus(), loadTags()])
-      .then(([m, t]) => {
+    Promise.all([loadMenus(), loadTags(), menuApi.getCategories()])
+      .then(([m, t, c]) => {
         setMenus(m)
         setTags(t)
+        setCategories(c)
       })
       .catch((e) => console.error('メニュー取得エラー:', e))
       .finally(() => setLoading(false))
@@ -106,6 +110,8 @@ export default function MenuManagement({ onBack }) {
       stock: '',
       active: true,
       tags: [],
+      categoryId: categories[0]?.id ?? null,
+      imageUrl: '',
     })
     setError('')
     setOpen(true)
@@ -116,13 +122,15 @@ export default function MenuManagement({ onBack }) {
   const openEdit = (menu) => {
     setMode('edit')
     setForm({
-      id:       menu.id,
-      name:     menu.name,
-      price:    Number(menu.price || 0),
-      useStock: menu.stock !== null,
-      stock:    menu.stock === null ? '' : String(menu.stock),
-      active:   !!menu.active,
-      tags:     Array.isArray(menu.tags) ? menu.tags : [],
+      id:         menu.id,
+      name:       menu.name,
+      price:      Number(menu.price || 0),
+      useStock:   menu.stock !== null,
+      stock:      menu.stock === null ? '' : String(menu.stock),
+      active:     !!menu.active,
+      tags:       Array.isArray(menu.tags) ? menu.tags : [],
+      categoryId: menu.categoryId ?? categories[0]?.id ?? null,
+      imageUrl:   menu.imageUrl || '',
     })
     setError('')
     setOpen(true)
@@ -193,7 +201,20 @@ export default function MenuManagement({ onBack }) {
       stockValue = stockNum
     }
 
-    const payload = { name, price, stock: stockValue, active: !!form.active, tags: form.tags }
+    if (!form.categoryId) {
+      setError('カテゴリを選択してください')
+      return
+    }
+
+    const payload = {
+      name,
+      price,
+      stock: stockValue,
+      active: !!form.active,
+      tags: form.tags,
+      categoryId: form.categoryId,
+      imageUrl: String(form.imageUrl || '').trim() || null,
+    }
 
     try {
       if (mode === 'add') {
@@ -352,6 +373,9 @@ export default function MenuManagement({ onBack }) {
 
                 <div className="meta">
                   <span className="chip">{m.id}</span>
+                  <span className="chip">
+                    {categories.find((c) => c.id === m.categoryId)?.displayName || '未分類'}
+                  </span>
                   <span className="chip">{yen(m.price)}</span>
                   {/* stock が null でないときのみ残数を表示（残数 0 は赤色） */}
                   {m.stock !== null && (
@@ -448,6 +472,29 @@ export default function MenuManagement({ onBack }) {
               <label className="label">
                 商品ID
                 <input className="input" value={form.id ?? '(自動採番)'} disabled />
+              </label>
+
+              <label className="label">
+                カテゴリ（客側メニューの表示先）
+                <select
+                  className="input"
+                  value={form.categoryId ?? ''}
+                  onChange={(e) => setForm({ ...form, categoryId: Number(e.target.value) })}
+                >
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.displayName}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="label">
+                商品画像URL（任意）
+                <input
+                  className="input"
+                  placeholder="https://... または /images/xxx.jpg"
+                  value={form.imageUrl}
+                  onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+                />
               </label>
 
               <label className="label">
