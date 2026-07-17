@@ -15,9 +15,10 @@
  *         → /menu（メニューブックに戻る）
  */
 
-import { useState, useContext } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import menuItems from '../data/menuItems'
+import { menuApi } from '../services/api'
+import { resolveMenuImage } from '../data/menuImages'
 import { CartContext } from '../contexts/CartContext'
 import useStayRemaining from '../hooks/useStayRemaining'
 import '../App.css'
@@ -29,9 +30,41 @@ export default function ProductDetail() {
   const navigate = useNavigate()
   const { addToCart } = useContext(CartContext)
 
-  // ID で商品データを検索する
-  // String(m.id) === String(id): 両方を文字列に変換して比較（型の不一致を防ぐため）
-  const item = menuItems.find((m) => String(m.id) === String(id))
+  // 商品データ（バックエンドから取得）
+  const [item, setItem] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [notFound, setNotFound] = useState(false)
+
+  // id が変わるたびにバックエンドから最新の商品情報を取得する
+  // → soldOut/価格などが常にDBの最新状態を反映する
+  useEffect(() => {
+    let cancelled = false
+
+    async function fetchItem() {
+      setLoading(true)
+      setNotFound(false)
+      try {
+        const raw = await menuApi.getItemById(id)
+        if (cancelled) return
+        setItem({
+          id: raw.id,
+          name: raw.name,
+          price: raw.price,
+          soldOut: raw.soldOut,
+          drinkPlanExcluded: raw.drinkPlanExcluded,
+          category: raw.category?.name,
+          image: resolveMenuImage(raw),
+        })
+      } catch {
+        if (!cancelled) setNotFound(true)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    fetchItem()
+    return () => { cancelled = true }
+  }, [id])
 
   // コース情報の取得
   const selectedCourse = sessionStorage.getItem('selectedCourse') || ''
@@ -49,9 +82,17 @@ export default function ProductDetail() {
   // 数量の状態（最小値は1）
   const [qty, setQty] = useState(1)
 
+  if (loading) {
+    return (
+      <div className="page-content">
+        <p>読み込み中...</p>
+      </div>
+    )
+  }
+
   // 商品が見つからない場合はエラーメッセージを表示する
   // ※ ルーティングで URL に存在しない ID が指定された場合
-  if (!item) {
+  if (notFound || !item) {
     return (
       <div className="page-content">
         <p>商品が見つかりません。</p>
