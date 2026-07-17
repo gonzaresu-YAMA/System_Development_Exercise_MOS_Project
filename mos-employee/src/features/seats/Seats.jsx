@@ -96,19 +96,28 @@ function Seats() {
     }
   }
 
+  // QRコード関連の状態をまとめてリセット
+  const resetQr = () => {
+    setActiveQrValue(null)
+    setQrCountdown(0)
+  }
+
   const handleSeatTap = (seat) => {
     if (seat.status === SEAT_STATUS.empty) {
+      resetQr()
       setConfirm({ mode: 'start', seat })
       return
     }
 
     if (seat.status === SEAT_STATUS.using) {
+      resetQr()
       setConfirm({ mode: 'pay', seat })
       return
     }
   }
 
   const openEdit = (seat) => {
+    resetQr()
     setDraft({ ...seat })
     setDropOpen(false)
     setConfirm(null)
@@ -117,6 +126,7 @@ function Seats() {
   const closeEdit = () => {
     setDraft(null)
     setDropOpen(false)
+    resetQr()
   }
 
   const applyEdit = () => {
@@ -149,12 +159,15 @@ function Seats() {
         setActiveQrValue(buildQrUrl(issued.qrCode))
         setQrCountdown(remainingSec)
         setToast(`${seat.id} のQRコードを発行しました`)
+        updateSeat({...seat,status:SEAT_STATUS.using})
+
+        setConfirm({mode:'qr',seat})
       } catch (e) {
         console.error('QR発行エラー:', e)
         setToast('QRコードの発行に失敗しました')
+        setConfirm(null)
       }
-
-      updateSeat({ ...seat, status: SEAT_STATUS.using })
+      return
     }
 
     if (mode === 'pay') {
@@ -164,7 +177,10 @@ function Seats() {
     setConfirm(null)
   }
 
-  const confirmCancel = () => setConfirm(null)
+  const confirmCancel = () => {
+    setConfirm(null)
+    resetQr()
+  }
 
   const bashingDone = (seat) => {
     updateSeat({ ...seat, status: SEAT_STATUS.empty, people: 0 })
@@ -319,30 +335,51 @@ function Seats() {
               </p>
             )}
 
+            {confirm.mode === 'qr' &&(
+              <p className="confirmText">
+                <strong>{confirm.seat.id}</strong>のQRコードを発行しました。
+                <br />
+                お客様に読み取ってもらってください。
+              </p>
+            )}
+
             <div className = "confirmWapper">
 
               {/* 確認ボタンの上のQRコードの表示エリア */}
-              {qrImageUrl && (
-                <div className = "qrCodeArea" style = {{display: 'flex',flexDirection: 'colum',alignItems:'center',marginBottom:'20px'}}>
-                  <img src={qrImageUrl} alt="QRコード" />
-                </div>
-              )}
+                  {qrImageUrl && (
+                    <div className = "qrCodeArea" style = {{display: 'flex',flexDirection: 'colum',alignItems:'center',marginBottom:'20px'}}>
+                      <img src={qrImageUrl} alt="QRコード" />
+                    </div>
+                  )}
 
               <div className="confirmActions">
-                <button className="ghostBtn2" onClick={confirmCancel} type="button">
-                  キャンセル
-                </button>
+                {confirm.mode === 'qr'?(
+                  <button
+                    className='primaryBtn2'
+                    onClick={confirmCancel}
+                    type="button"
+                    style={{gridColumn:'1/-1'}}
+                  >
+                    閉じる
+                  </button>
+                ):(
+                  <>
+                    <button className="ghostBtn2" onClick={confirmCancel} type="button">
+                      キャンセル
+                    </button>
 
-                {confirm.mode === 'start' ? (
-                  <button className="primaryBtn2" onClick={confirmOK} type="button">
-                    QRコードを発行する
-                  </button>
-                ) : (
-                  <button className="primaryBtn2" onClick={confirmOK} type="button">
-                    確認
-                  </button>
+                    {confirm.mode === 'start' ? (
+                    <button className="primaryBtn2" onClick={confirmOK} type="button">
+                      QRコードを発行する
+                    </button>
+                    ) : (
+                    <button className="primaryBtn2" onClick={confirmOK} type="button">
+                      確認
+                    </button>
+                    )}
+                  </>
                 )}
-              </div>
+              </div> 
             </div>
           </div>
         </>
@@ -407,6 +444,16 @@ function Seats() {
                 )}
               </div>
             </div>
+
+            {/* 再発行ボタンを押した後のQRコード表示エリア*/}
+            {qrImageUrl && (
+              <div 
+                className="qrCodeArea"
+                style={{display: 'flex',flexDirection: 'column',alignItems:'center',padding:'14px 0'}}
+              >
+                <img src={qrImageUrl} alt="QRコード"/>
+              </div>
+            )}
 
             <div className="modalActions three">
               <button
