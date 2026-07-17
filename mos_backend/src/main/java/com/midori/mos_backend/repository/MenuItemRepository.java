@@ -14,8 +14,6 @@ public interface MenuItemRepository extends JpaRepository<MenuItem, Long> {
 
     List<MenuItem> findByCategoryIdOrderBySortOrderAsc(Long categoryId);
 
-    List<MenuItem> findByCategoryNameOrderBySortOrderAsc(String categoryName);
-
     List<MenuItem> findBySoldOutFalseOrderBySortOrderAsc();
 
     List<MenuItem> findByCategoryNameAndActiveTrueOrderBySortOrderAsc(String categoryName);
